@@ -33,7 +33,7 @@ Modern multi-model databases like ArangoDB offer powerful querying capabilities 
 ## Project Structure
 
 ```
-LLM_Yelp_Project/
+llm-mmdb-assistant/
 ├── README.md
 ├── REPORT.md
 ├── requirements.txt
@@ -151,8 +151,8 @@ Comprehensive evaluation and analysis. Computes metrics (validation rate, execut
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/LLM_Yelp_Project.git
-cd LLM_Yelp_Project
+git clone https://github.com/amaljou/llm-mmdb-assistant.git
+cd llm-mmdb-assistant
 
 # Create virtual environment
 python -m venv venv
@@ -189,37 +189,37 @@ Run notebooks in order (01 through 06) to reproduce the full experimental pipeli
 
 ```
 User Question
-      │
-      ▼
-┌─────────────┐
-│  RAG Engine │──► Schema Retrieval (ChromaDB)
-│             │──► Example Retrieval (ChromaDB)
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  LLM Engine │──► Mistral / DeepSeek-Coder (Ollama)
-└──────┬──────┘
-       │
-       ▼
-┌──────────────────┐
-│ Query Validator   │──► Static schema checks
-│ Schema Repair     │──► Deterministic corrections
-│ LLM Correction    │──► Dynamic error fixing
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│ Privacy Filter    │──► Sensitive field detection
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│ Query Executor    │──► ArangoDB execution
-│ Execution Fix     │──► Runtime error correction
-└──────┬───────────┘
-       │
-       ▼
+      |
+      v
++-------------+
+|  RAG Engine |--> Schema Retrieval (ChromaDB)
+|             |--> Example Retrieval (ChromaDB)
++------+------+
+       |
+       v
++-------------+
+|  LLM Engine |--> Mistral / DeepSeek-Coder (Ollama)
++------+------+
+       |
+       v
++------------------+
+| Query Validator   |--> Static schema checks
+| Schema Repair     |--> Deterministic corrections
+| LLM Correction    |--> Dynamic error fixing
++------+-----------+
+       |
+       v
++------------------+
+| Privacy Filter    |--> Sensitive field detection
++------+-----------+
+       |
+       v
++------------------+
+| Query Executor    |--> ArangoDB execution
+| Execution Fix     |--> Runtime error correction
++------+-----------+
+       |
+       v
    Results
 ```
 
