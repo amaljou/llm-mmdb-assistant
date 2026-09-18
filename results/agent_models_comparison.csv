@@ -1,0 +1,3 @@
+model,questions,final_valid,final_valid_rate,final_invalid,corrected,corrected_rate,deterministic_repairs,llm_correction_attempted,llm_correction_valid,llm_correction_invalid,llm_correction_success_rate,privacy_blocked,technical_errors,avg_agent_time,median_agent_time,max_agent_time
+Mistral,128,117,0.9140625,11,51,0.3984375,21,30,20,10,0.6666666666666666,10,1,7.85,4.4,56.9
+DeepSeek-Coder,128,116,0.90625,12,37,0.2890625,22,18,6,12,0.3333333333333333,10,0,5.05,3.77,19.4

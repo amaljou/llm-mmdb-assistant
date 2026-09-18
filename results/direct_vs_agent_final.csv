@@ -1,0 +1,5 @@
+model,approach,validation_rate_%,execution_rate_%,functional_accuracy_%
+Mistral,RAG direct,85.94,50.0,32.81
+DeepSeek-Coder,RAG direct,93.75,72.66,50.0
+DeepSeek-Coder,RAG + Agent,90.62,69.53,39.06
+Mistral,RAG + Agent,91.41,58.59,36.72

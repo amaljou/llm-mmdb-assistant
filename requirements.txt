@@ -1,0 +1,22 @@
+# Core
+pandas>=1.5.0
+requests>=2.28.0
+
+# ArangoDB
+python-arango>=7.6.0
+
+# LLM & RAG
+langchain-core>=0.1.0
+langchain-chroma>=0.1.0
+langchain-huggingface>=0.1.0
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# Web App
+streamlit>=1.28.0
+
+# Visualization
+matplotlib>=3.6.0
+
+# Notebooks
+jupyter>=1.0.0

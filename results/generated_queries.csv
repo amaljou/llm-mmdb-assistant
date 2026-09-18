@@ -1,0 +1,2797 @@
+question_id,question,model,model_name,generated_aql,generation_time,generation_error
+Q001,Give me all the moroccan restaurants in Texas,Mistral,mistral:latest,"FOR b IN Businesses
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Moroccan"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.state == ""Texas""
+    RETURN b",8.247130870819092,
+Q002,List all the Italian restaurants in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    RETURN b",14.496273517608644,
+Q003,find the number of preschools in Madison,Mistral,mistral:latest,"LET preschools = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Preschool"" IN categories
+
+        RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(preschools)",3.9142699241638175,
+Q004,List all the restaurants rated more than 3.5,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.rating > 3.5
+RETURN b",1.7939469814300537,
+Q005,List all the businesses with more than 4.5 stars,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.rating > 4.5
+RETURN {
+    business_id: b.business_id,
+    name: b.name,
+    city: b.city,
+    state: b.state,
+    rating: b.rating
+}",2.85848331451416,
+Q006,find the number of restaurants rated more than 3.5,Mistral,mistral:latest,"LET restaurants = (
+    FOR b IN Businesses
+        FILTER b.rating > 3.5
+        FILTER b.is_open == true
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(restaurants)",3.7851154804229736,
+Q007,Which Thai restaurant has the most number of reviews,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city IS NOT NULL
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Thai"" IN categories
+    FILTER ""Restaurants"" IN categories
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.970558881759644,
+Q008,find all cities which has a “Taj Mahal” restaurant,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+        AND EXISTS (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Restaurants""
+                RETURN 1
+        )
+    RETURN DISTINCT b.city",3.195516347885132,
+Q009,find the total checkins in Moroccan restaurants in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Moroccan"" IN categories
+
+    LET checkins = (
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            RETURN ch.count
+    )
+
+    RETURN SUM(checkins)",4.304125785827637,
+Q010,find the total checkins in Moroccan restaurants in Los Angeles on Fridays,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Moroccan"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    LET fridayCheckins = (
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Friday""
+            RETURN ch.count
+    )
+
+    RETURN SUM(fridayCheckins)",5.137310266494751,
+Q011,find the total checkins in Moroccan restaurants in Los Angeles per day,Mistral,mistral:latest,"LET values = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Moroccan"" IN categories
+        FILTER ""Restaurants"" IN categories
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            RETURN ch.day, SUM(ch.count)
+)
+
+RETURN MAP(x => x[1], values), MAP(x => x[2], values)",5.374572515487671,
+Q012,find the total checkins in Italian delis in each state on Sundays,Mistral,mistral:latest,"LET states = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Italian"" IN categories
+        FILTER ""Deli"" IN categories
+
+        RETURN DISTINCT b.state
+),
+
+values = (
+    FOR b IN Businesses
+        FILTER b.state IN states
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Sunday""
+            RETURN ch.count
+);
+
+RETURN COLLECT VALUES values INTO totals BY state
+LET totals_per_state = MAP(totals, sum => SUM(filter s IN totals WHERE s.state == _id))
+RETURN totals_per_state;",7.282371759414673,
+Q013,list all the reviews by Niloofar,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..INFINITY OUTBOUND u WritesReview
+
+        RETURN {
+            business_id: r.business_id,
+            user_id: r.user_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }",4.264076471328735,
+Q014,list all the businesses which have a review by Niloofar,Mistral,mistral:latest,"FOR r IN Reviews
+    FILTER EXISTS(FOR u IN 1..1 INBOUND r WritesReview FILTER u.name == ""Niloofar"")
+
+    FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+        RETURN {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            state: b.state
+        }",4.305587530136108,
+Q015,How many reviews has Niloofar written in 2015,Mistral,mistral:latest,"LET reviewsByYear = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2015
+            RETURN r
+)
+
+RETURN COUNT(reviewsByYear)",3.62481427192688,
+Q016,list all the businesses which Niloofar rated 5,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..INFINITY OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FILTER b.rating == 5
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state,
+                rating: b.rating
+            }",4.971006155014038,
+Q017,what is the average rating given in Michelle reviews,Mistral,mistral:latest,"LET reviews = (
+    FOR r IN Reviews
+        FOR u IN 1..1 INBOUND r WritesReview
+            FILTER u.name == ""Michelle""
+        RETURN r.rating
+)
+
+RETURN AVERAGE(reviews)",2.862283945083618,
+Q018,which business has the most number of checkins,Mistral,mistral:latest,"FOR b IN Businesses
+    SORT b._id ASC
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        COLLECT checkins = SUM(ch.count)
+        SORT checkins DESC
+        LIMIT 1
+        RETURN b._id, checkins
+
+In this query, we first sort all businesses by their id in ascending order. Then, for each business, we traverse the BusinessCheckin edge to count the check-ins. We collect the check-ins for each business, sort them in descending order, and return the business id along with the count of the most number of check-ins.",5.553087472915649,
+Q019,List all the reviews by Michelle for Italian restaurants,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            LET categories = (
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN c.category_name
+            )
+            FILTER ""Italian"" IN categories
+            FILTER ""Restaurants"" IN categories
+            RETURN {
+                business_id: b.business_id,
+                rating: r.rating,
+                text: r.text,
+                year: r.year,
+                month: r.month
+            }
+
+To follow the schema rules:
+- We are retrieving only the reviews by Michelle for Italian restaurants, so we don't need to filter the business city or any other neighborhood information.
+- We are using the WritesReview and ReviewsBusiness edge collections to traverse from Users to Reviews and then to Businesses.
+- We are accessing the category_name through BusinessCategory as it belongs to the Categories collection.
+- We are returning only the required attributes for the reviews.",9.874398946762083,
+Q020,What is the number of checkins for “Cafe Zinho” on fridays,Mistral,mistral:latest,"LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Friday""
+            RETURN ch.count
+)
+
+RETURN SUM(values)",3.776889562606812,
+Q021,find the number of reviews written for “Cafe Zinho” restaurants in Texas,Mistral,mistral:latest,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER b.state == ""Texas""
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",3.7497613430023193,
+Q022,find the user with the most number of reviews,Mistral,mistral:latest,"FOR u IN Users
+LET reviews = (
+    FOR r IN 1..INFINITY OUTBOUND u WritesReview
+    RETURN r
+)
+SORT u.name DESC
+LIMIT 1
+RETURN u.uid, u.name, COUNT(reviews)",15.951170682907104,
+Q023,how many users reviewed Sushi Too in Pittsburgh,Mistral,mistral:latest,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Sushi Too""
+        FILTER b.city == ""Pittsburgh""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u._id
+)
+
+RETURN LENGTH(users)",4.417280435562134,
+Q024,What is the number of pet groomers in Edinburgh,Mistral,mistral:latest,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",4.155424356460571,
+Q025,How many pet groomers exist in Edinburgh,Mistral,mistral:latest,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",4.202751874923706,
+Q026,What is the number of restaurants in Pittsburgh rated 4.5,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+    FILTER b.rating == 4.5
+    FILTER b.is_open == true
+    FILTER b.category_name == ""Restaurants""
+    COUNT b
+    RETURN { count: res }
+
+In this query, we filter the businesses in Pittsburgh, ensure they are restaurants, have a rating of 4.5, and are open. We then count the number of businesses that meet these conditions. The result is returned as a single object with a 'count' property.",5.859926223754883,
+Q027,List all 5 star Italian restaurants,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.rating == 5
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",5.029407978057861,
+Q028,How many tips have been written in 2015,Mistral,mistral:latest,"LET tips = (
+    FOR t IN Tips
+        FILTER t.year == 2015
+        RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",2.890895366668701,
+Q029,What is the total likes on tips from Niloofar,Mistral,mistral:latest,"LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN t.likes
+)
+
+RETURN SUM(likes)",3.5305778980255127,
+Q030,What is the total likes on tips about “Cafe Zinho”,Mistral,mistral:latest,"LET likes = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+
+        FOR t IN 1..INFINITY OUTBOUND b TipsBusiness
+            RETURN t.likes
+)
+
+RETURN SUM(likes)",3.6461641788482666,
+Q031,What is the total likes on tips from Niloofar about “Cafe Zinho”,Mistral,mistral:latest,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FOR b IN 1..1 INBOUND t TipsBusiness
+                FILTER b.name == ""Cafe Zinho""
+                RETURN t.likes
+)
+
+RETURN SUM(tips)",4.561962366104126,
+Q032,How many tips has Michelle written in 2014,Mistral,mistral:latest,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2014
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",3.873820543289185,
+Q033,How many tips has Michelle written in April,Mistral,mistral:latest,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.month == ""April""
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",3.5300588607788086,
+Q034,what is the number of restaurants in Texas,Mistral,mistral:latest,"RETURN LENGTH(
+    FOR b IN Businesses
+        FILTER b.state == ""Texas""
+        FILTER ""Restaurants"" IN (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+        RETURN b._id
+)",3.815622806549072,
+Q035,which neighborhood has the most number of businesses in Madison,Mistral,mistral:latest,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN DISTINCT n.neighborhood_name
+)
+
+LET neighborhoodCounts = (
+    FOR neighborhood IN businesses
+        LET businessCount = COUNT(businesses FILTER neighborhood_name == neighborhood)
+        RETURN {neighborhood: neighborhood, count: businessCount}
+)
+
+RETURN SORT neighborhoodCounts BY count DESC LIMIT 1",5.783254861831665,
+Q036,List all the neighborhoods with Italian restaurants in Madison,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name
+
+Note: This AQL query follows the important schema rules provided. It lists all neighborhoods in Madison that have Italian restaurants. The query first filters businesses in Madison, then retrieves the categories associated with the business, and checks if the category is both Italian and Restaurant. Finally, it traverses the BusinessNeighborhood edge to get the neighborhood names.",7.358767747879028,
+Q037,List all the neighborhoods with Italian restaurants rated less than 2.5 in Madison,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating < 2.5
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name",6.261029481887817,
+Q038,Which neighborhood in Madison has the Italian restaurant with the highest stars,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    LET ratings = (
+        FOR r IN 1..1 OUTBOUND b TipsBusiness
+            RETURN r.rating
+    )
+
+    SORT ratings DESC
+    LIMIT 1
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN {
+            neighborhood: n.neighborhood_name,
+            rating: ratings[0]
+        }",6.843898296356201,
+Q039,List all businesses with rating 3.5,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.rating == 3.5
+RETURN {
+    business_id: b.business_id,
+    name: b.name,
+    city: b.city,
+    state: b.state,
+    rating: b.rating
+}",3.268430709838867,
+Q040,find all the restaurants in Texas,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.state == ""Texas""
+FILTER ""Restaurants"" IN (
+  FOR c IN 1..1 OUTBOUND b BusinessCategory
+    RETURN c.category_name
+)
+RETURN DISTINCT {
+  business_id: b.business_id,
+  name: b.name,
+  city: b.city,
+  state: b.state,
+  rating: b.rating
+}",4.6247289180755615,
+Q041,Find all the reviews for all pet groomers with more than 100 reviews,Mistral,mistral:latest,"FOR review IN Reviews
+LET groomers = (
+    FOR business IN 1..1 OUTBOUND review ReviewsBusiness
+    FOR category IN 1..1 OUTBOUND business BusinessCategory
+    FILTER category.category_name == ""Pet Groomers"" AND business.review_count > 100
+    RETURN DISTINCT business._id
+)
+FILTER review.business_id IN groomers
+RETURN {
+    review_id: review._id,
+    business_id: review.business_id,
+    user_id: review.user_id,
+    rating: review.rating,
+    text: review.text,
+    year: review.year,
+    month: review.month
+}",6.784341335296631,
+Q042,Find all pet groomers which have more than 100 reviews,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.review_count > 100
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Pet Groomers""
+        RETURN DISTINCT b._id",3.996136426925659,
+Q043,Find all Chinese restaurants in Dallas with at least 4 stars,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Chinese"" IN categories
+    FILTER b.rating >= 4
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",5.308426380157471,
+Q044,Find all Mexican restaurants in Dallas with a rating above 3.5,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 3.5
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Mexican"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",5.786315202713013,
+Q045,What are all the gyms in Los Angeles?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Gyms""
+
+    RETURN DISTINCT {
+        business_id: b.business_id,
+        name: b.name,
+        full_address: b.full_address
+    }",4.261617422103882,
+Q046,What is the number of dentists in Los Angeles?,Mistral,mistral:latest,"LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)",4.232738018035889,
+Q047,How many dentists in Los Angeles have a rating above 4?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles"" AND b.category_name == ""Dentists""
+    FILTER b.rating > 4
+    RETURN DISTINCT b._id
+
+RETURN LENGTH(RESULTS)",3.346970319747925,
+Q048,Find all bars in Dallas,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.city == ""Dallas""
+FILTER EXISTS (
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+    FILTER c.category_name == ""Bars""
+)
+RETURN DISTINCT b._id",3.4105050563812256,
+Q049,Find all dance schools in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Dance Schools"" IN categories
+
+    RETURN DISTINCT b._id",3.851633310317993,
+Q050,How many people reviewed the restaurant Texas de Brazil in Dallas Texas?,Mistral,mistral:latest,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.name == ""Texas de Brazil""
+            FILTER b.city == ""Dallas""
+            FILTER b.state == ""Texas""
+            RETURN COUNT(r)",4.423949956893921,
+Q051,How many people reviewed Bistro Di Napoli in 2015?,Mistral,mistral:latest,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro Di Napoli""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2015
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(users)",3.940029859542847,
+Q052,Find all restaurants in Los Angeles with more than 100 reviews,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count > 100
+    FILTER EXISTS IN 1..INFINITY OUTBOUND b BusinessCategory
+    FILTER ""Restaurants"" IN (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count,
+        rating: b.rating
+    }",6.137491226196289,
+Q053,How many restaurants are there in the Hazelwood district of Dallas?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET neighborhoods = (
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN n.neighborhood_name
+    )
+
+    FILTER ""Hazelwood"" IN neighborhoods
+    FILTER ""Restaurants"" IN (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    RETURN DISTINCT b._id",5.40157413482666,
+Q054,Find all hotels in Dallas with at least 50 reviews,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.is_open == true
+    FILTER b.category_name == ""Hotels""
+    FILTER b.review_count >= 50
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.891940355300903,
+Q055,Find all users who reviewed restaurant Mesa Grill,Mistral,mistral:latest,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.name == ""Mesa Grill""
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",4.215567588806152,
+Q056,How many Starbucks are there in Dallas Texas?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Starbucks""
+    FILTER b.city == ""Dallas""
+    FILTER b.state == ""Texas""
+    RETURN DISTINCT b._id
+
+LENGTH(result)",3.445286512374878,
+Q057,How many reviews does Acacia Cafe have?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Acacia Cafe""
+
+    LET reviews = (
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            RETURN DISTINCT r._id
+    )
+
+    RETURN LENGTH(reviews)",3.7299787998199454,
+Q058,Find all restaurants with valet service in Dallas Texas,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.state == ""Texas""
+    FILTER b.is_open == true
+    FILTER ""Restaurants"" IN (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Valet"" IN (
+        FOR v IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER v._to._key == ""Checkins""
+            RETURN v._from.name
+    )
+    RETURN DISTINCT b._id",6.233689069747925,
+Q059,List the addresses of all Walmarts in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name == ""Walmart""
+    RETURN DISTINCT b.full_address",2.9199295043945312,
+Q060,Find all restaurants reviewed by Patrick in Los Angeles,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FILTER b.city == ""Los Angeles""
+            FILTER b.full_address.city == ""Los Angeles""
+            FILTER b.full_address.state == ""CA""
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Restaurants""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name
+                }",6.946362257003784,
+Q061,Find all Italian restaurants in the Meadowood neighborhood of Madison,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.city == ""Meadowood""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    RETURN b",18.30872106552124,
+Q062,Find all bars reviewed by Patrick,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FILTER b.category_name == ""Bars""
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state,
+                rating: b.rating
+            }",4.755797147750855,
+Q063,Find all bars reviewed by Patrick with at least 3 stars,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Bars""
+                FILTER b.rating >= 3
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                rating: b.rating
+            }",4.821129560470581,
+Q064,Find all bars in Los Angeles with at least 30 reviews,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+    FILTER EXISTS_EDGE(b, ['ReviewsBusiness']) && EXISTS_EDGE(b, ['BusinessCategory'])
+    FOR c IN BusinessCategory OUTBOUND b
+        FILTER c.category_name == ""Bars""
+    RETURN DISTINCT {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",5.477942228317261,
+Q065,Find all bars in Los Angeles with at least 30 reviews and average rating above 3 stars,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+    LET avg_rating = (
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            SUM r.rating
+        RETURN AVG(DATA)
+    )
+    FILTER avg_rating > 3
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: avg_rating
+        }",5.588570594787598,
+Q066,How many Egyptian restaurants are there in Edinburgh?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Edinburgh""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Egyptian""
+            RETURN DISTINCT c.business_id
+    )
+
+    RETURN LENGTH(categories)",3.464160919189453,
+Q067,Find the average number of checkins in restaurant Barrio Café per day,Mistral,mistral:latest,"LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Barrio Café""
+        FILTER ""Restaurants"" IN (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            COLLECT day = ch.day
+            AGGREGATE total_checkins = SUM(ch.count)
+            AGGREGATE count = COUNT(ch)
+
+            SORT day
+
+            RETURN {day: day, checkins: total_checkins}
+)
+
+LET total = 0
+LET count = 0
+FOR v IN values
+    total = total + v.checkins
+    count = count + 1
+
+RETURN total / count",6.80718994140625,
+Q068,Which Indian restaurant in Dallas has the highest rating?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Indian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    SORT b.rating DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",5.067432880401611,
+Q069,Which restaurants in Dallas were reviewed by user Patrick?,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FILTER b.city == ""Dallas""
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name
+            }",4.173697710037232,
+Q070,How many businesses are there in the Stone Meadows neighborhood in Madison?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER EXISTS INBOUND b BusinessNeighborhood
+    FILTER n.neighborhood_name == ""Stone Meadows""
+    RETURN COUNT(b)",3.0210554599761963,
+Q071,Find all users who have written tips for Barrio Café in 2015,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Barrio Café""
+    FILTER b.year == 2015
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t WritesTip
+
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",4.327010631561279,
+Q072,Find all businesses in Texas with a rating below 2,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.state == ""Texas""
+FILTER b.rating < 2
+RETURN b
+
+Note: This query only returns the Business document itself and does not include other fields like city, state, etc. If you need to include those fields, you can adjust the `RETURN` statement accordingly. However, the question does not explicitly ask for those fields, so I've kept the `RETURN` statement as it is for now.",3.965693950653076,
+Q073,Find all restaurants that serve seafood in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Restaurants"" IN categories
+    FILTER ""Seafood"" IN (
+        FOR cat IN categories
+        FILTER cat == ""Seafood""
+    )
+
+    FILTER b.city == ""Los Angeles""
+    RETURN DISTINCT b",6.747445583343506,
+Q074,Which Indian restaurant in Dallas has the most number of reviews?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Indian"" IN categories
+
+    SORT b.review_count DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count
+    }",5.243819236755371,
+Q075,Which Italian restaurant in Dallas has the highest rating?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    SORT b.rating DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",5.667965650558472,
+Q076,How many bars in Dallas have a rating above 3.5?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 3.5
+    FILTER EXISTS(
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Bars""
+    )
+    RETURN COUNT()",4.3654890060424805,
+Q077,What is the number of businesses user Michelle reviews per month?,Mistral,mistral:latest,"LET reviewsPerMonth = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            SORT r.year, r.month
+            RETURN {month: r.month, count: LENGTH(r._id)}
+)
+
+LET groupedReviews = (
+    FOR rev IN reviewsPerMonth
+        LET month = rev.month
+        LET count = rev.count
+
+        UPsert {month: month, count: count} IN Neighborhoods
+        RETURN NULL
+)
+
+RETURN FOR d IN Neighborhoods
+    FILTER d.month == (CURRENT_MONTH || '01')
+    SORT d.month
+    RETURN {month: d.month, count: d.count}",7.504090785980225,
+Q078,Find all pet hospices in Pittsburgh,Mistral,mistral:latest,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Pittsburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Hospices""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",4.081515789031982,
+Q079,How many reviews has Adrienne written?,Mistral,mistral:latest,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Adrienne""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",3.4817051887512207,
+Q080,How many reviews has Michelle written in March 2014?,Mistral,mistral:latest,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2014 AND r.month == 3
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",4.103195905685425,
+Q081,How many businesses has Michelle reviewed in 2010?,Mistral,mistral:latest,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(filter reviews BY INBOUND _from/Businesses/business_id)",4.598647594451904,
+Q082,How many businesses in San Diego has Christine reviewed in 2010?,Mistral,mistral:latest,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Christine""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+            FILTER r.business_id._key.city == ""San Diego""
+            RETURN DISTINCT r.business_id._key
+)
+
+RETURN LENGTH(reviews)",4.923889875411987,
+Q083,Find all reviews by Patrick with a rating above 4,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..INFINITY OUTBOUND u WritesReview
+        FILTER r.rating > 4
+
+        RETURN {
+            review_id: r.rid,
+            business_id: r.business_id,
+            rating: r.rating
+        }",4.329005718231201,
+Q084,Find all bistros in Pittsburgh,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.city == ""Pittsburgh""
+LET categories = (
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        RETURN c.category_name
+)
+FILTER ""Bistros"" IN categories
+RETURN DISTINCT {
+    business_id: b.business_id,
+    name: b.name,
+    city: b.city,
+    rating: b.rating
+}",4.842204332351685,
+Q085,Find all bakeries in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Bakeries"" IN categories
+
+    RETURN DISTINCT b.business_id, b.name, b.rating",4.248096466064453,
+Q086,Find all Apple stores in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name == ""Apple Store""
+    RETURN DISTINCT b.full_address",2.66537880897522,
+Q087,How many Target are there in Los Angeles?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Target""
+    FILTER b.city == ""Los Angeles""
+
+    RETURN LENGTH(b._id)",2.770387887954712,
+Q088,How many users have reviewed Irish pubs in Dallas?,Mistral,mistral:latest,"FOR u IN Users
+    FOR r IN 1..INFINITY OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FILTER b.city == ""Dallas""
+
+            LET categories = (
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN c.category_name
+            )
+
+            FILTER ""Irish Pub"" IN categories AND ""Pubs"" IN categories
+
+            RETURN DISTINCT u._id
+
+    LIMIT 1
+
+COUNT IN length
+
+To count the number of distinct users, the LIMIT 1 in the outer loop of the traversal is set to 1 instead of INFINITY. This ensures that only one user is returned for each review, and the count is accurate. The count is performed using the COUNT IN length function, which counts the number of elements in an array-like collection.",8.648486852645874,
+Q089,Find users whose average review rating is below 3,Mistral,mistral:latest,"FOR u IN Users
+LET ratings = (
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        RETURN r.rating
+)
+LET average_rating = AVERAGE(ratings)
+FILTER average_rating < 3
+RETURN {
+    user_id: u.uid,
+    name: u.name
+}",3.795717000961304,
+Q090,Find all Dallas restaurants with a rating above 4.5,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 4.5
+    RETURN b",4.215149879455566,
+Q091,Find all breweries in Los Angeles,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.city == ""Los Angeles""
+
+FOR c IN 1..1 OUTBOUND b BusinessCategory
+FILTER c.category_name == ""Breweries""
+
+RETURN DISTINCT {
+    business_id: b.business_id,
+    name: b.name
+}",3.3805720806121826,
+Q092,What neighborhood is restaurant Flat Top Grill in?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Flat Top Grill""
+
+    LET neighborhood = (
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN n.neighborhood_name
+    )
+
+    RETURN neighborhood[0]",3.675112724304199,
+Q093,List all user ids with name Michelle,Mistral,mistral:latest,"RETURN LENGTH(
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        RETURN u._id
+)",2.765850782394409,
+Q094,Find all tips about Vintner Grill that received more than 9 likes,Mistral,mistral:latest,"LET tips = (
+    FOR t IN Tips
+        FOR b IN 1..1 OUTBOUND t TipsBusiness
+            FILTER b.business_id == ""Vintner Grill""
+            FILTER t.likes > 9
+            RETURN DISTINCT t
+)
+
+RETURN tips",3.595417261123657,
+Q095,Find all reviews about Kabob Palace in year 2014,Mistral,mistral:latest,"FOR r IN Reviews
+    FILTER r.business_id IN (
+        FOR b IN Businesses
+            FILTER b.name == ""Kabob Palace""
+            FOR c IN 1..1 OUTBOUND b ReviewsBusiness
+                FILTER c._key == r._id
+                RETURN b.business_id
+    )
+    FILTER r.year == 2014
+    RETURN r",6.394410133361816,
+Q096,What is the average rating of reviews written in year 2014?,Mistral,mistral:latest,"LET reviews_2014 = (
+    FOR r IN Reviews
+        FILTER r.year == 2014
+
+        RETURN r.rating
+)
+
+RETURN AVERAGE(reviews_2014)",3.034941911697388,
+Q097,How many people reviewed restaurant Vintner Grill in 2010?,Mistral,mistral:latest,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Restaurants"" IN categories
+
+    FOR r IN 1..1 INBOUND b ReviewsBusiness
+        FILTER r.year == 2010
+        RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",5.512680292129517,
+Q098,Find all users who have written tips about businesses in Dallas,Mistral,mistral:latest,"FOR b IN Businesses
+FILTER b.city == ""Dallas""
+
+FOR t IN 1..1 INBOUND b TipsBusiness
+    FOR u IN 1..1 INBOUND t WritesTip
+
+    RETURN DISTINCT {
+        user_id: u.user_id,
+        name: u.name
+    }",4.050607681274414,
+Q099,Find all states in which there is a Whataburger,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Whataburger""
+    RETURN DISTINCT b.state",2.2092108726501465,
+Q100,Find all cities in which there is a restaurant callled MGM Grand Buffet,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet""
+    FILTER b.is_open == true
+    FILTER b.rating > 0
+    RETURN DISTINCT b.city",2.716075897216797,
+Q101,Find all cities in Texas in which there is a restaurant callled MGM Grand Buffet,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" AND b.state == ""Texas""
+    RETURN DISTINCT b.city",2.4098002910614014,
+Q102,Find the number of reviews on businesses located in South Summerlin neighborhood,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Las Vegas"" AND b.full_address CONTAINS ""South Summerlin""
+
+    LET reviews = (
+        FOR r IN 1..INFINITY OUTBOUND b ReviewsBusiness
+    )
+
+    RETURN LENGTH(reviews)",3.889323711395264,
+Q103,How many escape games are there in Madison?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Escape Games"" IN categories
+
+    RETURN DISTINCT b._id",3.8874218463897705,
+Q104,Find the users who have given tips on pet groomers,Mistral,mistral:latest,"FOR u IN Users
+    FOR t IN OUTBOUND u WritesTip
+        FOR b IN 1..1 OUTBOUND t TipsBusiness
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Pet Groomers""
+                RETURN DISTINCT {
+                    user_id: u.user_id,
+                    name: u.name
+                }",4.806578397750855,
+Q105,List all reviews for bistros with rating less than 1.5,Mistral,mistral:latest,"FOR r IN 1..INFINITY ReviewsBusiness
+    LET business = (
+        FOR b IN Businesses
+            FILTER r._from == b._id
+            FILTER b.name CONTAINS ""Bistro""
+            FILTER b.rating < 1.5
+            RETURN b
+    )
+    FILTER UNSET(business) == NULL
+    RETURN r",4.674819946289063,
+Q106,Find the number of users called Michelle,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+    RETURN LENGTH(u)",2.15794324874878,
+Q107,Find the cities of businesses rated below 1.5,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.rating < 1.5
+    RETURN { city: b.city }",2.1566476821899414,
+Q108,In which neighborhoods Michelle has reviewed a buissness?,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+
+    LET reviews = (
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN DISTINCT r
+    )
+
+    LET businesses = (
+        FOR r IN reviews
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            RETURN DISTINCT b
+    )
+
+    LET neighborhoods = (
+        FOR b IN businesses
+            FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN DISTINCT n.neighborhood_name
+    )
+
+RETURN neighborhoods",6.366500854492188,
+Q109,Find the business with the most number of reviews in April,Mistral,mistral:latest,"FOR b IN Businesses
+LET reviews_in_april = (
+    FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+        FILTER r.month == 4
+        RETURN r
+)
+LET num_reviews = LENGTH(reviews_in_april)
+FOR business_with_max_reviews IN (
+    FOR b_candidate IN Businesses
+        LET reviews_candidate = (
+            FOR r IN 1..1 OUTBOUND b_candidate ReviewsBusiness
+                FILTER r.month == 4
+                RETURN r
+        )
+        LET num_reviews_candidate = LENGTH(reviews_candidate)
+        FILTER num_reviews_candidate > num_reviews
+        RETURN {
+            business_id: b_candidate.business_id,
+            num_reviews: num_reviews_candidate
+        }
+)
+RETURN business_with_max_reviews.business_id",12.367879152297974,
+Q110,"Find all tips for ""Cafe Zinho"" in Texas.",Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho""
+    FILTER b.state == ""Texas""
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+
+        RETURN DISTINCT {
+            tip_id: t.tip_id,
+            user_id: t.user_id,
+            likes: t.likes,
+            text: t.text
+        }",4.754745006561279,
+Q111,"Find all cities which has a ""Taj Mahal"".",Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city",1.9554150104522705,
+Q112,List all businesses that are restaurants in Pennsylvania.,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.state == ""Pennsylvania""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    RETURN b
+
+To clarify, the query retrieves all businesses (b) located in Pennsylvania, then gets the categories associated with those businesses (b) using the BusinessCategory edge collection. Afterward, it filters out the restaurants from the categories. Finally, it returns the entire business document (b).",5.294690608978272,
+Q113,Return me the number of businesses that are restaurants.,Mistral,mistral:latest,"FOR b IN Businesses
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        RETURN DISTINCT b._id
+
+RETURN LENGTH(RESULTS)",6.769579172134399,
+Q114,List all users who reviewed businesses that are restaurants.,Mistral,mistral:latest,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Restaurants""
+                RETURN DISTINCT {
+                    user_id: u.user_id,
+                    name: u.name
+                }",4.04237699508667,
+Q115,"Return me the number of cities that has ""Panda Express"".",Mistral,mistral:latest,"LET cities = (
+    FOR b IN Businesses
+        FILTER b.name == ""Panda Express""
+        RETURN DISTINCT b.city
+)
+
+RETURN LENGTH(cities)",2.4232566356658936,
+Q116,"List all tips for ""Cafe Zinho"" in Pennsylvania in 2010.",Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho""
+    FILTER b.state == ""Pennsylvania""
+    FILTER b.year == 2010
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+
+        RETURN DISTINCT {
+            tip_id: t.tip_id,
+            user_id: t.user_id,
+            likes: t.likes,
+            text: t.text,
+            year: t.year
+        }",4.511386156082153,
+Q117,Return me the number of tips that are written by Michelle.,Mistral,mistral:latest,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",2.785764455795288,
+Q118,Return me the number of tips that are written by Michelle in 2010.,Mistral,mistral:latest,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2010
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",2.887705087661743,
+Q119,List all users who reviewed businesses that are restaurants in 2010.,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name IN (
+        FOR c IN Categories
+            FILTER c.category_name == ""Restaurants""
+
+            FOR b IN 1..1 OUTBOUND c BusinessCategory
+                FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+                    FILTER r.year == 2010
+                    RETURN u._id
+    )
+
+    RETURN {
+        user_id: u._id,
+        name: u.name
+    }",4.661513805389404,
+Q120,Find the total checkins in Brighton Heights neighborhood,Mistral,mistral:latest,"LET businesses = (
+    FOR b IN Businesses
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Brighton Heights""
+            RETURN DISTINCT b._id
+)
+
+LET checkins = (
+    FOR b IN businesses
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            RETURN ch.count
+)
+
+RETURN SUM(checkins)",4.207911491394043,
+Q121,Find the total checkins in Sundays,Mistral,mistral:latest,"LET values = (
+    FOR ch IN 1..1 OUTBOUND Businesses BusinessCheckin
+        FILTER ch.day == ""Sunday""
+        RETURN ch.count
+)
+
+RETURN SUM(values)",2.828282356262207,
+Q122,Find all the tips from a user who has written a review in 2012,Mistral,mistral:latest,"FOR u IN Users
+    FILTER u.name IN (
+        FOR r IN Reviews
+            FILTER r.year == 2012
+            RETURN u._id
+    )
+
+    FOR t IN 1..1 OUTBOUND u WritesTip
+    RETURN DISTINCT t",3.9114367961883545,
+Q123,Find the total number of reviews written in March,Mistral,mistral:latest,"LET reviews_march = (
+    FOR r IN Reviews
+        FILTER r.month == ""March""
+        OR r.month == 3
+    RETURN DISTINCT r._id
+);
+
+RETURN LENGTH(reviews_march)",2.857649087905884,
+Q124,Find the number of tips written in each month,Mistral,mistral:latest,"LET tipsByMonth = (
+    FOR t IN Tips
+        LET month = t.month, year = t.year
+        RETURN {month: month, count: LENGTH(
+            FOR u IN Users
+                FILTER u.name == (
+                    FOR tIn 1..1 OUTBOUND t WritesTip
+                        FILTER t._id == t._id
+                        RETURN u.name
+                )
+            )
+        }
+)
+
+RETURN MAP(
+    function(doc) { return {month: doc.month, count: doc.count} },
+    UNNEST(
+        FOR tip IN tipsByMonth
+            GROUP BY tip.month
+            SORT BY tip.month
+            RETURN tip
+    )
+)",6.233841180801392,
+Q125,How many neighborhoods have a business with rating 5 in Madison?,Mistral,mistral:latest,"FOR b IN Businesses
+    FILTER b.city == ""Madison"" AND b.rating == 5
+
+    LET neighborhoods = (
+        FOR n IN 1..INBOUND b BusinessNeighborhood
+            RETURN DISTINCT n.neighborhood_name
+    )
+
+    RETURN LENGTH(neighborhoods)",3.691318988800049,
+Q126,Find the business which has the most number of categories,Mistral,mistral:latest,"LET business_categories_count = (
+    FOR b IN Businesses
+        RETURN LENGTH(EXPAND b OUTBOUND BusinessCategory)
+)
+
+LET business_with_max_categories = (
+    FOR b, cnt IN business_categories_count
+        SORT cnt DESC
+        LIMIT 1
+        RETURN b
+)
+
+RETURN business_with_max_categories[0]._id",3.813433885574341,
+Q127,List all the reviews which rated a business less than 1,Mistral,mistral:latest,"FOR r IN Reviews
+FILTER r.rating < 1
+RETURN {
+    business_id: r.business_id,
+    user_id: r.user_id,
+    rating: r.rating,
+    text: r.text,
+    year: r.year,
+    month: r.month
+}",3.622605800628662,
+Q128,Find all reviews for businesses rated 2.5,Mistral,mistral:latest,"FOR r IN Reviews
+FILTER EXISTS (FOR b IN 1..INBOUND r ReviewsBusiness
+                  FILTER b.business.rating == 2.5)
+RETURN {
+    review_id: r.rid,
+    user_id: r.user_id,
+    business_id: r.business_id,
+    rating: r.rating,
+    text: r.text
+}",4.116883993148804,
+Q001,Give me all the moroccan restaurants in Texas,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Moroccan""
+            RETURN c.category_name
+    )
+    FILTER ""Moroccan"" IN categories
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state
+    }",6.867936372756958,
+Q002,List all the Italian restaurants in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",3.9466893672943115,
+Q003,find the number of preschools in Madison,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Preschools""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.3185408115386963,
+Q004,List all the restaurants rated more than 3.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.rating > 3.5
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",3.987651824951172,
+Q005,List all the businesses with more than 4.5 stars,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",3.1409554481506348,
+Q006,find the number of restaurants rated more than 3.5,DeepSeek-Coder,deepseek-coder:6.7b,"LET restaurants = (
+    FOR b IN Businesses
+        FILTER b.rating > 3.5
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN DISTINCT b._id
+)
+RETURN LENGTH(restaurants)",3.344066858291626,
+Q007,Which Thai restaurant has the most number of reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Thai"" IN categories
+
+    SORT b.review_count DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.495704650878906,
+Q008,find all cities which has a “Taj Mahal” restaurant,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city",2.414707899093628,
+Q009,find the total checkins in Moroccan restaurants in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Moroccan"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        COLLECT day = ch.day
+        AGGREGATE total_checkins = SUM(ch.count)
+
+        SORT day
+
+        RETURN {
+            day: day,
+            total_checkins: total_checkins
+        }",4.932849884033203,
+Q010,find the total checkins in Moroccan restaurants in Los Angeles on Fridays,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Moroccan"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        FILTER ch.day == ""Friday""
+        COLLECT total_checkins = SUM(ch.count)
+
+        RETURN total_checkins",4.60110878944397,
+Q011,find the total checkins in Moroccan restaurants in Los Angeles per day,DeepSeek-Coder,deepseek-coder:6.7b,"LET values = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Moroccan"" IN categories
+        FILTER ""Restaurants"" IN categories
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            COLLECT day = ch.day
+            AGGREGATE total_checkins = SUM(ch.count)
+
+            SORT day
+
+            RETURN {
+                day: day,
+                total_checkins: total_checkins
+            }
+)
+
+RETURN SUM(values)",5.371759653091431,
+Q012,find the total checkins in Italian delis in each state on Sundays,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city IN (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Italian""
+            RETURN c.category_name
+    )
+    FILTER b.name IN (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Delis""
+            RETURN c.category_name
+    )
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        FILTER ch.day == ""Sunday""
+        COLLECT state = b.state
+        AGGREGATE total_checkins = SUM(ch.count)
+        RETURN {
+            state: state,
+            total_checkins: total_checkins
+        }",5.790935039520264,
+Q013,list all the reviews by Niloofar,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        RETURN {
+            review_id: r.review_id,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }",3.7342095375061035,
+Q014,list all the businesses which have a review by Niloofar,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+FILTER u.name == ""Niloofar""
+
+FOR r IN 1..1 OUTBOUND u WritesReview
+
+FOR b IN 1..1 INBOUND r ReviewsBusiness
+
+RETURN DISTINCT {
+    business_id: b.business_id,
+    name: b.name,
+    city: b.city,
+    state: b.state
+}",3.6551620960235596,
+Q015,How many reviews has Niloofar written in 2015,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.year == 2015
+        RETURN COUNT(r)",3.1141722202301025,
+Q016,list all the businesses which Niloofar rated 5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.rating == 5
+
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state,
+                rating: b.rating
+            }",4.0168962478637695,
+Q017,what is the average rating given in Michelle reviews,DeepSeek-Coder,deepseek-coder:6.7b,"LET ratings = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r.rating
+)
+
+RETURN AVERAGE(ratings)",2.9632210731506348,
+Q018,which business has the most number of checkins,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        COLLECT business = b.business_id
+        WITH COUNT INTO checkin_count
+    SORT checkin_count DESC
+    LIMIT 1
+    RETURN {
+        business_id: business,
+        checkin_count: checkin_count
+    }",3.4118664264678955,
+Q019,List all the reviews by Michelle for Italian restaurants,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Italian""
+
+                RETURN {
+                    review: r.text,
+                    rating: r.rating
+                }",4.1441755294799805,
+Q020,What is the number of checkins for “Cafe Zinho” on fridays,DeepSeek-Coder,deepseek-coder:6.7b,"LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Friday""
+            RETURN ch.count
+)
+
+RETURN SUM(values)",3.471848726272583,
+Q021,find the number of reviews written for “Cafe Zinho” restaurants in Texas,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+        FILTER b.state == ""Texas""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",3.462047815322876,
+Q022,find the user with the most number of reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    LET count = COUNT(FOR r IN 1..1 OUTBOUND u WritesReview RETURN r)
+    SORT count DESC
+    LIMIT 1
+    RETURN {
+        user_id: u.user_id,
+        name: u.name,
+        review_count: count
+    }",3.3473005294799805,
+Q023,how many users reviewed Sushi Too in Pittsburgh,DeepSeek-Coder,deepseek-coder:6.7b,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Sushi Too""
+        FILTER b.city == ""Pittsburgh""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u.user_id
+)
+
+RETURN LENGTH(users)",4.202586889266968,
+Q024,What is the number of pet groomers in Edinburgh,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.53377628326416,
+Q025,How many pet groomers exist in Edinburgh,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.584341287612915,
+Q026,What is the number of restaurants in Pittsburgh rated 4.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+    FILTER b.rating == 4.5
+    RETURN COUNT(b)",2.7623250484466553,
+Q027,List all 5 star Italian restaurants,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.rating == 5
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Italian""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            rating: b.rating
+        }",3.835477828979492,
+Q028,How many tips have been written in 2015,DeepSeek-Coder,deepseek-coder:6.7b,"LET tips = (
+    FOR t IN Tips
+        FILTER t.year == 2015
+        RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",2.750490665435791,
+Q029,What is the total likes on tips from Niloofar,DeepSeek-Coder,deepseek-coder:6.7b,"LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN t.likes
+)
+
+RETURN SUM(likes)",2.8470382690429688,
+Q030,What is the total likes on tips about “Cafe Zinho”,DeepSeek-Coder,deepseek-coder:6.7b,"LET likes = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+
+        FOR t IN 1..1 INBOUND b TipsBusiness
+            RETURN t.likes
+)
+
+RETURN SUM(likes)",2.9174985885620117,
+Q031,What is the total likes on tips from Niloofar about “Cafe Zinho”,DeepSeek-Coder,deepseek-coder:6.7b,"LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FOR b IN Businesses
+                FILTER b.name == ""Cafe Zinho""
+                FOR tip_b IN 1..1 INBOUND b TipsBusiness
+                    RETURN tip_b.likes
+)
+
+RETURN SUM(likes)",3.769935131072998,
+Q032,How many tips has Michelle written in 2014,DeepSeek-Coder,deepseek-coder:6.7b,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2014
+            RETURN DISTINCT t._id
+)
+RETURN LENGTH(tips)",3.3368706703186035,
+Q033,How many tips has Michelle written in April,DeepSeek-Coder,deepseek-coder:6.7b,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.month == ""April""
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",3.002316474914551,
+Q034,what is the number of restaurants in Texas,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN LENGTH(
+    FOR b IN Businesses
+        FILTER b.state == ""Texas""
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+        FILTER ""Restaurants"" IN categories
+        RETURN b._id
+)",3.227588415145874,
+Q035,which neighborhood has the most number of businesses in Madison,DeepSeek-Coder,deepseek-coder:6.7b,"LET neighborhoods = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            COLLECT n.neighborhood_name INTO grouped
+            SORT grouped DESC
+            LIMIT 1
+
+            RETURN n.neighborhood_name
+)
+
+RETURN neighborhoods[0]",3.65885591506958,
+Q036,List all the neighborhoods with Italian restaurants in Madison,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name",4.09997034072876,
+Q037,List all the neighborhoods with Italian restaurants rated less than 2.5 in Madison,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating < 2.5
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name",4.401524066925049,
+Q038,Which neighborhood in Madison has the Italian restaurant with the highest stars,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN {neighborhood: n.neighborhood_name, rating: b.rating}
+
+    SORT rating DESC
+    LIMIT 1",4.704136610031128,
+Q039,List all businesses with rating 3.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.rating == 3.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",3.1819849014282227,
+Q040,find all the restaurants in Texas,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+FILTER b.state == ""Texas""
+
+LET categories = (
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        RETURN c.category_name
+)
+
+FILTER ""Restaurants"" IN categories
+
+RETURN {
+    business_id: b.business_id,
+    name: b.name,
+    city: b.city,
+    state: b.state,
+    rating: b.rating
+}",4.033758640289307,
+Q041,Find all the reviews for all pet groomers with more than 100 reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.review_count > 100
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Pet Groomers""
+
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            RETURN {
+                business_id: b.business_id,
+                review: r
+            }",3.625807523727417,
+Q042,Find all pet groomers which have more than 100 reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.review_count > 100
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Pet Groomers""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            business_name: b.name,
+            review_count: b.review_count
+        }",3.8797590732574463,
+Q043,Find all Chinese restaurants in Dallas with at least 4 stars,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Chinese"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating >= 4
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.753567695617676,
+Q044,Find all Mexican restaurants in Dallas with a rating above 3.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Mexican"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating > 3.5
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",4.631091833114624,
+Q045,What are all the gyms in Los Angeles?,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN DISTINCT 
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Gyms""
+            RETURN {
+                business_id: b.business_id,
+                name: b.name,
+                rating: b.rating
+            }",3.7049927711486816,
+Q046,What is the number of dentists in Los Angeles?,DeepSeek-Coder,deepseek-coder:6.7b,"LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)",3.370917797088623,
+Q047,How many dentists in Los Angeles have a rating above 4?,DeepSeek-Coder,deepseek-coder:6.7b,"LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+            FILTER b.rating > 4
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)",3.7677392959594727,
+Q048,Find all bars in Dallas,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+        RETURN DISTINCT b",2.9452383518218994,
+Q049,Find all dance schools in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Dance Schools""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",3.5256259441375732,
+Q050,How many people reviewed the restaurant Texas de Brazil in Dallas Texas?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Texas de Brazil""
+    FILTER b.city == ""Dallas""
+    FILTER b.state == ""Texas""
+    
+    RETURN LENGTH(
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            RETURN r
+    )",3.4740982055664062,
+Q051,How many people reviewed Bistro Di Napoli in 2015?,DeepSeek-Coder,deepseek-coder:6.7b,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro Di Napoli""
+        FILTER b.city == ""Dallas""
+        FILTER b.state == ""Texas""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u._id
+)
+
+RETURN LENGTH(users)",4.014097690582275,
+Q052,Find all restaurants in Los Angeles with more than 100 reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count > 100
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count
+    }",3.5935170650482178,
+Q053,How many restaurants are there in the Hazelwood district of Dallas?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas""
+
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Hazelwood""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",10.834550619125366,
+Q054,Find all hotels in Dallas with at least 50 reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.review_count >= 50
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Hotels""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            review_count: b.review_count
+        }",3.982003688812256,
+Q055,Find all users who reviewed restaurant Mesa Grill,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Mesa Grill""
+    FOR r IN 1..1 INBOUND b ReviewsBusiness
+        FOR u IN 1..1 INBOUND r WritesReview
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",3.5918991565704346,
+Q056,How many Starbucks are there in Dallas Texas?,DeepSeek-Coder,deepseek-coder:6.7b,"LET starbucks = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas"" && b.state == ""Texas""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Starbucks"" IN categories
+
+        RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(starbucks)",4.060899496078491,
+Q057,How many reviews does Acacia Cafe have?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Acacia Cafe""
+    RETURN b.review_count",2.392979860305786,
+Q058,Find all restaurants with valet service in Dallas Texas,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas"" && b.state == ""Texas""
+    
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        
+        FOR v IN 1..1 OUTBOUND c BusinessCategory
+            FILTER v.category_name == ""Valet Service""
+            
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state
+            }",4.668965101242065,
+Q059,List the addresses of all Walmarts in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN DISTINCT 
+    b.full_address
+FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER CONTAINS(LOWER(b.name), ""walmart"")
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Walmarts""
+        RETURN DISTINCT b.full_address",3.850097417831421,
+Q060,Find all restaurants reviewed by Patrick in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.city == ""Los Angeles""
+
+            LET categories = (
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN c.category_name
+            )
+
+            FILTER ""Restaurants"" IN categories
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                rating: b.rating
+            }",5.157454252243042,
+Q061,Find all Italian restaurants in the Meadowood neighborhood of Madison,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FILTER n.neighborhood_name == ""Meadowood""
+
+        RETURN {
+            business: b.name,
+            neighborhood: n.neighborhood_name
+        }",4.701930999755859,
+Q062,Find all bars reviewed by Patrick,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Bars""
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    city: b.city,
+                    state: b.state,
+                    rating: b.rating
+                }",4.779443979263306,
+Q063,Find all bars reviewed by Patrick with at least 3 stars,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.rating >= 3
+
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Bars""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    rating: b.rating,
+                    review_count: b.review_count
+                }",4.983039855957031,
+Q064,Find all bars in Los Angeles with at least 30 reviews,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating,
+            review_count: b.review_count
+         }",4.286705732345581,
+Q065,Find all bars in Los Angeles with at least 30 reviews and average rating above 3 stars,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        LET reviews = (
+            FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+                RETURN r.rating
+        )
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating,
+            review_count: b.review_count,
+            average_rating: AVG(reviews)
+        }",5.333948135375977,
+Q066,How many Egyptian restaurants are there in Edinburgh?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Egyptian"" IN categories
+
+        RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.812033176422119,
+Q067,Find the average number of checkins in restaurant Barrio Café per day,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Barrio Café""
+    FILTER b.is_open
+    
+    COLLECT day = ch.day
+    AGGREGATE total_checkins = SUM(ch.count)
+    
+    SORT day
+    
+    RETURN {
+        day: day,
+        average_checkins: total_checkins / 7
+    }",3.719740629196167,
+Q068,Which Indian restaurant in Dallas has the highest rating?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Indian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.rating DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.987879276275635,
+Q069,Which restaurants in Dallas were reviewed by user Patrick?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.city == ""Dallas""
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Restaurants""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    rating: b.rating
+                }",4.845949411392212,
+Q070,How many businesses are there in the Stone Meadows neighborhood in Madison?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+        FILTER b.name == ""Stone Meadows""
+
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.8376970291137695,
+Q071,Find all users who have written tips for Barrio Café in 2015,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Barrio Café""
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FILTER t.year == 2015
+
+        FOR u IN 1..1 INBOUND t WritesTip
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",3.689077138900757,
+Q072,Find all businesses in Texas with a rating below 2,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    FILTER b.rating < 2
+    RETURN DISTINCT {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",3.406646490097046,
+Q073,Find all restaurants that serve seafood in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city ​​== ""Los Angeles""
+    
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Seafood"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    RETURN DISTINCT {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        rating: b.rating
+    }",4.169394254684448,
+Q074,Which Indian restaurant in Dallas has the most number of reviews?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Indian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.review_count DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count
+    }",4.932789087295532,
+Q075,Which Italian restaurant in Dallas has the highest rating?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Italian""
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    SORT b.rating DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",4.913677453994751,
+Q076,How many bars in Dallas have a rating above 3.5?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 3.5
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+    RETURN COUNT(b)",3.602510929107666,
+Q077,What is the number of businesses user Michelle reviews per month?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            COLLECT month = r.month, business_id = r.business_id
+            RETURN {month, count: COUNT(DISTINCT business_id)}
+)
+
+RETURN businesses",3.526754140853882,
+Q078,Find all pet hospices in Pittsburgh,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Pet Hospitals""
+
+        RETURN DISTINCT  {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            state: b.state,
+            review_count: b.review_count,
+            rating: b.rating
+         }",4.372379302978516,
+Q079,How many reviews has Adrienne written?,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Adrienne""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",3.1420676708221436,
+Q080,How many reviews has Michelle written in March 2014?,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.month == 3 AND r.year == 2014
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",3.4446663856506348,
+Q081,How many businesses has Michelle reviewed in 2010?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",3.5662736892700195,
+Q082,How many businesses in San Diego has Christine reviewed in 2010?,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Christine""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+
+            FOR b IN 1..1 OUTBOUND r.business_id Businesses
+                FILTER b.city == ""San Diego""
+                RETURN DISTINCT b.business_id
+)
+
+RETURN LENGTH(businesses)",4.185034275054932,
+Q083,Find all reviews by Patrick with a rating above 4,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.rating > 4
+        RETURN {
+            review_id: r.rid,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text
+        }",3.6028499603271484,
+Q084,Find all bistros in Pittsburgh,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city À ""Pittsburgh""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bistros""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",3.56376051902771,
+Q085,Find all bakeries in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bakeries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",3.4765608310699463,
+Q086,Find all Apple stores in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Apple Store""
+    FILTER b.city == ""Los Angeles""
+    RETURN DISTINCT b.full_address",2.557385206222534,
+Q087,How many Target are there in Los Angeles?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Target"" && b.city == ""Los Angeles""
+    RETURN COUNT(b)",2.3207504749298096,
+Q088,How many users have reviewed Irish pubs in Dallas?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Irish Pubs""
+            RETURN c.category_name
+    )
+    FILTER ""Irish Pubs"" IN categories
+    COLLECT user = r.user_id FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+    RETURN LENGTH(user)",4.3529980182647705,
+Q089,Find users whose average review rating is below 3,DeepSeek-Coder,deepseek-coder:6.7b,"LET ratings = (
+    FOR u IN Users
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r.rating
+)
+
+FILTER AVERAGE(ratings) < 3
+
+RETURN {
+    user_id: u.user_id,
+    name: u.name
+}",3.6207034587860107,
+Q090,Find all Dallas restaurants with a rating above 4.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating
+    }",3.2360475063323975,
+Q091,Find all breweries in Los Angeles,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Breweries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",3.5794100761413574,
+Q092,What neighborhood is restaurant Flat Top Grill in?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Flat Top Grill""
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN n.neighborhood_name",2.649779796600342,
+Q093,List all user ids with name Michelle,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN LENGTH(
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        RETURN u._id
+)",2.558650255203247,
+Q094,Find all tips about Vintner Grill that received more than 9 likes,DeepSeek-Coder,deepseek-coder:6.7b,"LET tips = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR t IN 1..1 INBOUND b TipsBusiness
+            FILTER t.likes > 9
+            RETURN DISTINCT {
+                tip_id: t.tip_id,
+                user_id: t.user_id,
+                likes: t.likes,
+                text: t.text
+            }
+)
+
+RETURN tips",4.073400020599365,
+Q095,Find all reviews about Kabob Palace in year 2014,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Kabob Palace"" AND b.year == 2014
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            RETURN {
+                user_id: r.user_id,
+                rating: r.rating,
+                text: r.text,
+                month: r.month
+            }
+)
+
+RETURN reviews",3.724594831466675,
+Q096,What is the average rating of reviews written in year 2014?,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR r IN Reviews
+        FILTER r.year == 2014
+        RETURN r.rating
+)
+
+RETURN AVERAGE(reviews)",2.5489885807037354,
+Q097,How many people reviewed restaurant Vintner Grill in 2010?,DeepSeek-Coder,deepseek-coder:6.7b,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2010
+
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u._id
+)
+
+RETURN LENGTH(users)",3.7718052864074707,
+Q098,Find all users who have written tips about businesses in Dallas,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN 1..1 OUTBOUND uid WritesTip
+    FILTER u.city == ""Dallas""
+    RETURN DISTINCT {
+        user_id: u.user_id,
+        name: u.name
+    }",2.9100887775421143,
+Q099,Find all states in which there is a Whataburger,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Whataburger""
+    RETURN DISTINCT b.state",2.381483793258667,
+Q100,Find all cities in which there is a restaurant callled MGM Grand Buffet,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet""
+    RETURN DISTINCT b.city",1.8886611461639404,
+Q101,Find all cities in Texas in which there is a restaurant callled MGM Grand Buffet,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" AND b.state == ""Texas""
+    RETURN DISTINCT b.city",2.4178781509399414,
+Q102,Find the number of reviews on businesses located in South Summerlin neighborhood,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""South Summerlin""
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FILTER n.neighborhood_name == ""South Summerlin""
+        COLLECT neighborhood = n.neighborhood_name
+        WITH COUNT INTO review_count
+    RETURN review_count",3.3534529209136963,
+Q103,How many escape games are there in Madison?,DeepSeek-Coder,deepseek-coder:6.7b,"I'm sorry, but I can't help with that. As per the provided schema, I can't find any information about escape games. If you have information about escape games in the schema, please update the schema information and I can help you with the corresponding AQL query.",3.113506555557251,
+Q104,Find the users who have given tips on pet groomers,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN 1..1 INBOUND ""Users"" WritesTip
+    FOR t IN 1..1 INBOUND t TipsBusiness
+        FOR b IN 1..1 INBOUND t BusinessCategory
+            FILTER b.category_name == ""Pet Groomers""
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",3.61869478225708,
+Q105,List all reviews for bistros with rating less than 1.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR r IN Reviews
+    FILTER r.rating < 1.5
+    RETURN 
+        {
+            review_id: r.rid,
+            user_id: r.user_id,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text
+        }",3.289283275604248,
+Q106,Find the number of users called Michelle,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+    RETURN COUNT(u)",2.235539197921753,
+Q107,Find the cities of businesses rated below 1.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.rating < 1.5
+    RETURN b.city",2.1290788650512695,
+Q108,In which neighborhoods Michelle has reviewed a buissness?,DeepSeek-Coder,deepseek-coder:6.7b,"LET neighborhoods = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+                    RETURN DISTINCT n.neighborhood_name
+)
+
+RETURN neighborhoods",3.612173318862915,
+Q109,Find the business with the most number of reviews in April,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.is_open
+
+    LET reviews = (
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.month == ""April""
+            RETURN r
+    )
+
+    SORT LENGTH(reviews) DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: LENGTH(reviews)
+    }",4.383860349655151,
+Q110,"Find all tips for ""Cafe Zinho"" in Texas.",DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho"" && b.state == ""Texas""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t WritesTip
+            RETURN {
+                tip_id: t.tip_id,
+                user_id: u.user_id,
+                likes: t.likes,
+                text: t.text
+            }",3.9889609813690186,
+Q111,"Find all cities which has a ""Taj Mahal"".",DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city",2.367933988571167,
+Q112,List all businesses that are restaurants in Pennsylvania.,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.state == ""Pennsylvania""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    RETURN b",3.046689033508301,
+Q113,Return me the number of businesses that are restaurants.,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)",2.960423707962036,
+Q114,List all users who reviewed businesses that are restaurants.,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER EXISTS(
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    FILTER c.category_name == ""Restaurants""
+            )
+            RETURN DISTINCT u.user_id",3.785842180252075,
+Q115,"Return me the number of cities that has ""Panda Express"".",DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Panda Express""
+    RETURN DISTINCT b.city
+
+Notice that this query will return a list of distinct cities that ""Panda Express"" is located in. To get the count of these cities, you may not use the LENGTH() function, but instead use COUNT() function in AQL to get the total number of these cities.
+
+Final AQL:
+
+FOR b IN Businesses
+    FILTER b.name == ""Panda Express""
+    RETURN COUNT(DISTINCT b.city)",4.548047065734863,
+Q116,"List all tips for ""Cafe Zinho"" in Pennsylvania in 2010.",DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho""
+    FILTER b.state == ""Pennsylvania""
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FILTER t.year == 2010
+
+        RETURN DISTINCT {
+            tip_id: t.tip_id,
+            user_id: t.user_id,
+            likes: t.likes,
+            text: t.text,
+            year: t.year
+        }",4.27398157119751,
+Q117,Return me the number of tips that are written by Michelle.,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN LENGTH(
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN t._id
+)",2.8084356784820557,
+Q118,Return me the number of tips that are written by Michelle in 2010.,DeepSeek-Coder,deepseek-coder:6.7b,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2010
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",3.041123390197754,
+Q119,List all users who reviewed businesses that are restaurants in 2010.,DeepSeek-Coder,deepseek-coder:6.7b,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.year == 2010
+        FOR b IN 1..1 INBOUND r ReviewsBusiness
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Restaurants""
+                RETURN {user_id: u.user_id, name: u.name}",3.999892234802246,
+Q120,Find the total checkins in Brighton Heights neighborhood,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Brighton Heights""
+
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Brighton Heights""
+
+            FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+                RETURN ch.count
+)
+
+RETURN SUM(businesses)",4.121664762496948,
+Q121,Find the total checkins in Sundays,DeepSeek-Coder,deepseek-coder:6.7b,"LET values = (
+    FOR b IN Businesses
+
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Sunday""
+            RETURN ch.count
+)
+
+RETURN SUM(values)",2.996190071105957,
+Q122,Find all the tips from a user who has written a review in 2012,DeepSeek-Coder,deepseek-coder:6.7b,"LET user = (
+    FOR u IN Users
+        FILTER u.name == ""UserName""
+        RETURN u.user_id
+)
+
+FOR v, e, p IN 1..1 INBOUND user WritesReview
+    FILTER v.year == 2012
+    FOR t IN 1..1 INBOUND v TipsBusiness
+        RETURN DISTINCT  {
+            tip_id: t.tip_id,
+            text: t.text,
+            user_id: u.user_id,
+            likes: t.likes
+        }",4.558094263076782,
+Q123,Find the total number of reviews written in March,DeepSeek-Coder,deepseek-coder:6.7b,"LET reviews = (
+    FOR r IN Reviews
+        FILTER r.month 3
+        RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",2.6321141719818115,
+Q124,Find the number of tips written in each month,DeepSeek-Coder,deepseek-coder:6.7b,"RETURN LENGTH(
+    FOR t IN Tips
+        GROUP BY t.month
+        RETURN 1
+)",2.22615909576416,
+Q125,How many neighborhoods have a business with rating 5 in Madison?,DeepSeek-Coder,deepseek-coder:6.7b,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.rating == 5
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        COLLECT neighborhood = n.neighborhood_name
+        RETURN COUNT(DISTINCT neighborhood)",2.987126350402832,
+Q126,Find the business which has the most number of categories,DeepSeek-Coder,deepseek-coder:6.7b,"LET businesses = (
+    FOR b IN Businesses
+        RETURN {
+            business_id: b.business_id,
+            name: b.name,
+            categories: (
+                FOR v, e, p IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN DISTINCT p.category_name
+            )
+        }
+)
+
+FOR b IN businesses
+    SORT LENGTH(b.categories) DESC
+    LIMIT 1
+    RETURN b.business_id, b.name, LENGTH(b.categories)",4.399439811706543,
+Q127,List all the reviews which rated a business less than 1,DeepSeek-Coder,deepseek-coder:6.7b,"FOR r IN Reviews
+    FILTER r.rating < 1
+    RETURN {
+        review_id: r.rid,
+        business_id: r.business_id,
+        user_id: r.user_id,
+        rating: r.rating,
+        text: r.text
+    }",3.155120611190796,
+Q128,Find all reviews for businesses rated 2.5,DeepSeek-Coder,deepseek-coder:6.7b,"FOR r IN Reviews
+    FILTER r.rating == 2.5
+    RETURN {
+        review_id: r.rid,
+        user_id: r.user_id,
+        business_id: r.business_id,
+        rating: r.rating,
+        text: r.text
+    }",3.2434935569763184,

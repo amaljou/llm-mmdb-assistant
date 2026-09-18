@@ -1,0 +1,2 @@
+model,questions,final_valid,final_valid_rate,final_invalid,corrected,corrected_rate,deterministic_repairs,llm_correction_attempted,corrected_valid,corrected_invalid,llm_correction_valid,llm_correction_invalid,llm_correction_success_rate,privacy_allowed,privacy_blocked,technical_errors,avg_agent_time,median_agent_time,max_agent_time
+Mistral,128,117,0.9140625,11,51,0.3984375,21,30,41,10,20,10,0.6666666666666666,117,10,1,7.851052149074284,4.399832010269165,56.90205955505371

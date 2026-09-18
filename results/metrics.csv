@@ -1,0 +1,3 @@
+model,questions,generated,validation_valid,validation_rate_%,privacy_allowed,privacy_allowed_rate_%,executed,execution_rate_%,gold_executed,gold_execution_rate_%,functional_correct,functional_accuracy_%,avg_generation_time_s,median_generation_time_s
+Mistral,128,128,110,85.94,116,90.62,64,50.0,124,96.88,42,32.81,4.79,4.22
+DeepSeek-Coder,128,128,120,93.75,115,89.84,93,72.66,124,96.88,64,50.0,3.73,3.62

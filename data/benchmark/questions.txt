@@ -1,0 +1,59 @@
+Quels sont les 10 commerces les mieux notés ?
+
+Quels commerces sont situés à Las Vegas ?
+
+Quels commerces sont ouverts ?
+
+Quels commerces sont fermés ?
+
+Quels utilisateurs ont écrit plus de 100 avis ?
+
+Quels commerces ont plus de 500 avis ?
+
+Quels commerces ont exactement 5 étoiles ?
+
+Quels commerces appartiennent à la catégorie Pizza ?
+
+Combien de commerces y a-t-il par ville ?
+
+Quels avis ont reçu 5 étoiles ?
+
+Quels commerces se trouvent à Phoenix ?
+
+Quels commerces se trouvent à Toronto ?
+
+Quels commerces se trouvent à Santa Barbara ?
+
+Quels commerces ont une note supérieure à 4 étoiles ?
+
+Quels commerces ont une note inférieure à 3 étoiles ?
+
+Quels sont les 20 commerces ayant le plus grand nombre d'avis ?
+
+Quels sont les 20 utilisateurs ayant écrit le plus d'avis ?
+
+Quels commerces ont moins de 50 avis ?
+
+Quels commerces sont dans la catégorie Restaurants ?
+
+Quels commerces sont dans la catégorie Coffee & Tea ?
+
+Quels commerces sont dans la catégorie Bars ?
+
+Quels commerces sont situés dans l'État NV ?
+
+Quels commerces sont situés dans l'État CA ?
+
+Quels commerces sont ouverts et ont plus de 4 étoiles ?
+
+Quels commerces sont fermés mais possèdent encore une note supérieure à 4 étoiles ?
+
+Quels commerces ont un nom qui contient le mot "Pizza" ?
+
+Quels commerces ont un nom qui commence par la lettre A ?
+
+Quelle est la note moyenne des commerces ?
+
+Quel est le nombre total de commerces ouverts ?
+
+Quel est le nombre total de commerces fermés ?

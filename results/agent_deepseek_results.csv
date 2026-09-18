@@ -1,0 +1,2239 @@
+question_id,question,model,original_aql,final_aql,valid,corrected,correction_attempts,generation_time,validation_errors,validation_warnings,privacy_allowed,privacy_reason,history,generation_error
+Q001,Give me all the moroccan restaurants in Texas,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategories
+            FILTER c.category_name == ""Restaurants""
+            RETURN c.category_name
+    )
+    FILTER ""Moroccan"" IN categories
+    RETURN b","I'm sorry, but the information you provided seems to be incomplete. The original incorrect AQL query you provided seems to be missing some parts. I would need more details about the schema and the relationship between collections to be able to provide a correct AQL query. Could you provide more information about the collections and their fields, and the relationships between them?",True,True,1,5.635782480239868,[],[],True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.state == \""Texas\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategories\n            FILTER c.category_name == \""Restaurants\""\n            RETURN c.category_name\n    )\n    FILTER \""Moroccan\"" IN categories\n    RETURN b"", ""aql"": ""I'm sorry, but the information you provided seems to be incomplete. The original incorrect AQL query you provided seems to be missing some parts. I would need more details about the schema and the relationship between collections to be able to provide a correct AQL query. Could you provide more information about the collections and their fields, and the relationships between them?"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [], ""invalid_attributes"": []}, ""generation_time"": 3.51183819770813}, {""step"": ""privacy_check"", ""aql"": ""I'm sorry, but the information you provided seems to be incomplete. The original incorrect AQL query you provided seems to be missing some parts. I would need more details about the schema and the relationship between collections to be able to provide a correct AQL query. Could you provide more information about the collections and their fields, and the relationships between them?"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q002,List all the Italian restaurants in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,4.434327125549316,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n    FILTER \""Italian\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q003,find the number of preschools in Madison,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name IN [
+                ""Preschools"",
+                ""Preschool""
+            ]
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Preschools""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.252764940261841,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name IN [\n                \""Preschools\"",\n                \""Preschool\""\n            ]\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(businesses)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Preschools\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Preschools\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q004,List all the restaurants rated more than 3.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating > 3.5
+    FILTER ""restaurants"" IN (
+        FOR t IN 1..1 OUTBOUND b TipsBusiness
+            FOR c IN 1..1 OUTBOUND t._to BusinessCategory
+                RETURN c.category_name
+    )
+    RETURN b","FOR b IN Businesses
+    FILTER b.rating > 3.5
+    FILTER ""restaurants"" IN (
+        FOR t IN 1..1 OUTBOUND b TipsBusiness
+            FOR c IN 1..1 OUTBOUND t._to BusinessCategory
+                RETURN c.category_name
+    )
+    RETURN b",True,False,0,3.0363364219665527,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating > 3.5\n    FILTER \""restaurants\"" IN (\n        FOR t IN 1..1 OUTBOUND b TipsBusiness\n            FOR c IN 1..1 OUTBOUND t._to BusinessCategory\n                RETURN c.category_name\n    )\n    RETURN b"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q005,List all the businesses with more than 4.5 stars,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }","FOR b IN Businesses
+    FILTER b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",True,False,0,2.6488912105560303,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating > 4.5\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        city: b.city,\n        state: b.state,\n        rating: b.rating\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q006,find the number of restaurants rated more than 3.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating > 3.5 
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        RETURN DISTINCT b.business_id","FOR b IN Businesses
+    FILTER b.rating > 3.5 
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        RETURN DISTINCT b.business_id",True,False,0,2.6341025829315186,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating > 3.5 \n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Restaurants\""\n        RETURN DISTINCT b.business_id"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q007,Which Thai restaurant has the most number of reviews,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas"" AND b.name CONTAINS ""Thai""
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN b.business_id, b.name, b.rating, b.review_count","FOR b IN Businesses
+    FILTER b.city == ""Dallas"" AND b.name CONTAINS ""Thai""
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN b.business_id, b.name, b.rating, b.review_count",True,False,0,2.909268379211426,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" AND b.name CONTAINS \""Thai\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN b.business_id, b.name, b.rating, b.review_count"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q008,find all cities which has a “Taj Mahal” restaurant,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city","FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city",True,False,0,9.110654830932617,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Taj Mahal\""\n    RETURN DISTINCT b.city"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q009,find the total checkins in Moroccan restaurants in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.state == ""Los Angeles""
+    FOR n IN 1..1 OUTBOUND b Neighborhoods
+        FILTER n.neighborhood_name == ""Moroccan""
+        FOR ch IN 1..1 OUTBOUND b Checkins
+            RETURN ch.count","FOR b IN Businesses
+    FILTER b.state == ""Los Angeles""
+    FOR n IN 1..1 OUTBOUND b Neighborhoods
+        FILTER n.neighborhood_name == ""Moroccan""
+        FOR ch IN 1..1 OUTBOUND b Checkins
+            RETURN ch.count",True,False,0,2.894453525543213,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.state == \""Los Angeles\""\n    FOR n IN 1..1 OUTBOUND b Neighborhoods\n        FILTER n.neighborhood_name == \""Moroccan\""\n        FOR ch IN 1..1 OUTBOUND b Checkins\n            RETURN ch.count"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q010,find the total checkins in Moroccan restaurants in Los Angeles on Fridays,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name CONTAINS ""Moroccan""
+    FILTER b.categories CONTAINS ""Restaurants""
+    FOR ch IN BusinessCheckin
+        FILTER ch.business_id == b.business_id
+        FILTER ch.day == ""Friday""
+        COLLECT total_checkins = SUM(ch.count)
+        RETURN total_checkins","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name CONTAINS ""Moroccan""
+    FOR c IN BusinessCategory
+        FILTER c.business_id == b.business_id
+        FILTER c.category_name == ""Restaurants""
+    FOR ch IN BusinessCheckin
+        FILTER ch.business_id == b.business_id
+        FILTER ch.day == ""Friday""
+        COLLECT total_checkins = SUM(ch.count)
+        RETURN total_checkins",False,True,2,16.06601119041443,"[""Unknown attribute 'business_id' in collection 'BusinessCategory'."", ""Unknown attribute 'category_name' in collection 'BusinessCategory'."", ""Unknown attribute 'business_id' in collection 'BusinessCheckin'."", ""Unknown attribute 'day' in collection 'BusinessCheckin'."", ""Unknown attribute 'count' in collection 'BusinessCheckin'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name CONTAINS \""Moroccan\""\n    FILTER b.categories CONTAINS \""Restaurants\""\n    FOR ch IN BusinessCheckin\n        FILTER ch.business_id == b.business_id\n        FILTER ch.day == \""Friday\""\n        COLLECT total_checkins = SUM(ch.count)\n        RETURN total_checkins"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name CONTAINS \""Moroccan\""\n    FOR c IN BusinessCategory\n        FILTER c.business_id == b.business_id\n        FILTER c.category_name == \""Restaurants\""\n    FOR ch IN BusinessCheckin\n        FILTER ch.business_id == b.business_id\n        FILTER ch.day == \""Friday\""\n        COLLECT total_checkins = SUM(ch.count)\n        RETURN total_checkins"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'business_id' in collection 'BusinessCategory'."", ""Unknown attribute 'category_name' in collection 'BusinessCategory'."", ""Unknown attribute 'business_id' in collection 'BusinessCheckin'."", ""Unknown attribute 'day' in collection 'BusinessCheckin'."", ""Unknown attribute 'count' in collection 'BusinessCheckin'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""BusinessCategory"", ""BusinessCheckin"", ""Businesses""], ""invalid_attributes"": [{""alias"": ""c"", ""collection"": ""BusinessCategory"", ""attribute"": ""business_id""}, {""alias"": ""c"", ""collection"": ""BusinessCategory"", ""attribute"": ""category_name""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""business_id""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""day""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""count""}]}, ""generation_time"": 5.858976602554321}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name CONTAINS \""Moroccan\""\n    FOR c IN BusinessCategory\n        FILTER c.business_id == b.business_id\n        FILTER c.category_name == \""Restaurants\""\n    FOR ch IN BusinessCheckin\n        FILTER ch.business_id == b.business_id\n        FILTER ch.day == \""Friday\""\n        COLLECT total_checkins = SUM(ch.count)\n        RETURN total_checkins"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name CONTAINS \""Moroccan\""\n    FOR c IN BusinessCategory\n        FILTER c.business_id == b.business_id\n        FILTER c.category_name == \""Restaurants\""\n    FOR ch IN BusinessCheckin\n        FILTER ch.business_id == b.business_id\n        FILTER ch.day == \""Friday\""\n        COLLECT total_checkins = SUM(ch.count)\n        RETURN total_checkins"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'business_id' in collection 'BusinessCategory'."", ""Unknown attribute 'category_name' in collection 'BusinessCategory'."", ""Unknown attribute 'business_id' in collection 'BusinessCheckin'."", ""Unknown attribute 'day' in collection 'BusinessCheckin'."", ""Unknown attribute 'count' in collection 'BusinessCheckin'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""BusinessCategory"", ""BusinessCheckin"", ""Businesses""], ""invalid_attributes"": [{""alias"": ""c"", ""collection"": ""BusinessCategory"", ""attribute"": ""business_id""}, {""alias"": ""c"", ""collection"": ""BusinessCategory"", ""attribute"": ""category_name""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""business_id""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""day""}, {""alias"": ""ch"", ""collection"": ""BusinessCheckin"", ""attribute"": ""count""}]}, ""generation_time"": 6.326988220214844}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name CONTAINS \""Moroccan\""\n    FOR c IN BusinessCategory\n        FILTER c.business_id == b.business_id\n        FILTER c.category_name == \""Restaurants\""\n    FOR ch IN BusinessCheckin\n        FILTER ch.business_id == b.business_id\n        FILTER ch.day == \""Friday\""\n        COLLECT total_checkins = SUM(ch.count)\n        RETURN total_checkins"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q011,find the total checkins in Moroccan restaurants in Los Angeles per day,DeepSeek-Coder,"LET values = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+        FILTER b.categories[*].category_name == ""Moroccan""
+        FILTER b.categories[*].category_name == ""Restaurants""
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            RETURN ch.count
+)
+RETURN SUM(values)","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name == ""Moroccan""
+    FILTER b.categories[*].category_name == ""Restaurants""
+    FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+        RETURN ch.count
+
+RETURN SUM(values)",False,True,2,16.896224975585938,"[""Unknown attribute 'categories' in collection 'Businesses'.""]",[],True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""LET values = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n        FILTER b.categories[*].category_name == \""Moroccan\""\n        FILTER b.categories[*].category_name == \""Restaurants\""\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            RETURN ch.count\n)\nRETURN SUM(values)"", ""aql"": ""LET values = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n        FILTER b.name == \""Moroccan\""\n        FILTER b.categories[*].category_name == \""Restaurants\""\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            RETURN ch.count\n)\nRETURN SUM(values)"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'categories' in collection 'Businesses'.""], ""warnings"": [], ""used_collections"": [""BusinessCheckin"", ""Businesses""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""categories""}]}, ""generation_time"": 7.405043363571167}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""LET values = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n        FILTER b.name == \""Moroccan\""\n        FILTER b.categories[*].category_name == \""Restaurants\""\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            RETURN ch.count\n)\nRETURN SUM(values)"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name == \""Moroccan\""\n    FILTER b.categories[*].category_name == \""Restaurants\""\n    FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n        RETURN ch.count\n\nRETURN SUM(values)"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'categories' in collection 'Businesses'.""], ""warnings"": [], ""used_collections"": [""BusinessCheckin"", ""Businesses""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""categories""}]}, ""generation_time"": 5.112896919250488}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name == \""Moroccan\""\n    FILTER b.categories[*].category_name == \""Restaurants\""\n    FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n        RETURN ch.count\n\nRETURN SUM(values)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q012,find the total checkins in Italian delis in each state on Sundays,DeepSeek-Coder,"LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Italian deli""
+        FILTER b.city == ""Los Angeles""
+        FILTER b.is_open
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Sunday""
+            RETURN ch.count
+)
+
+RETURN SUM(values)","LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Italian deli""
+        FILTER b.city == ""Los Angeles""
+        FILTER b.is_open
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER ch.day == ""Sunday""
+            RETURN ch.count
+)
+
+RETURN SUM(values)",True,False,0,4.242964029312134,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET values = (\n    FOR b IN Businesses\n        FILTER b.name == \""Italian deli\""\n        FILTER b.city == \""Los Angeles\""\n        FILTER b.is_open\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            FILTER ch.day == \""Sunday\""\n            RETURN ch.count\n)\n\nRETURN SUM(values)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q013,list all the reviews by Niloofar,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        RETURN {
+            review_id: r.rid,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }","FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        RETURN {
+            review_id: r.rid,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }",True,False,0,3.9179255962371826,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name == \""Niloofar\""\n\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        RETURN {\n            review_id: r.rid,\n            business_id: r.business_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n        }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q014,list all the businesses which have a review by Niloofar,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state
+            }","FOR u IN Users
+    FILTER u.name == ""Niloofar""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+
+            RETURN DISTINCT {
+                business_id: b.business_id,
+                name: b.name,
+                city: b.city,
+                state: b.state
+            }",True,False,0,4.1257994174957275,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name == \""Niloofar\""\n\n    FOR r IN 1..1 OUTBOUND u WritesReview\n\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n\n            RETURN DISTINCT {\n                business_id: b.business_id,\n                name: b.name,\n                city: b.city,\n                state: b.state\n            }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q015,How many reviews has Niloofar written in 2015,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.user_id == ""Niloofar"" && r.year == 2015
+    RETURN COUNT(r)","FOR r IN Reviews
+    FILTER r.user_id == ""Niloofar"" && r.year == 2015
+    RETURN COUNT(r)",True,False,0,2.2922632694244385,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR r IN Reviews\n    FILTER r.user_id == \""Niloofar\"" && r.year == 2015\n    RETURN COUNT(r)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q016,list all the businesses which Niloofar rated 5,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.user_id == ""Niloofar"" AND r.stars == 5
+    
+    FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            state: b.state,
+            rating: b.rating
+        }","FOR b IN 1..1 OUTBOUND 'Reviews' ReviewsBusiness
+    FILTER b.user_id == ""Niloofar"" AND b.stars == 5
+    RETURN DISTINCT {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",True,True,1,9.229672908782959,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR r IN Reviews\n    FILTER r.user_id == \""Niloofar\"" AND r.stars == 5\n    \n    FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            city: b.city,\n            state: b.state,\n            rating: b.rating\n        }"", ""aql"": ""FOR b IN 1..1 OUTBOUND 'Reviews' ReviewsBusiness\n    FILTER b.user_id == \""Niloofar\"" AND b.stars == 5\n    RETURN DISTINCT {\n        business_id: b.business_id,\n        name: b.name,\n        city: b.city,\n        state: b.state,\n        rating: b.rating\n    }"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [], ""invalid_attributes"": []}, ""generation_time"": 5.1052162647247314}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN 1..1 OUTBOUND 'Reviews' ReviewsBusiness\n    FILTER b.user_id == \""Niloofar\"" AND b.stars == 5\n    RETURN DISTINCT {\n        business_id: b.business_id,\n        name: b.name,\n        city: b.city,\n        state: b.state,\n        rating: b.rating\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q017,what is the average rating given in Michelle reviews,DeepSeek-Coder,"LET ratings = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r.rating
+)
+
+RETURN AVERAGE(ratings)","LET ratings = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r.rating
+)
+
+RETURN AVERAGE(ratings)",True,False,0,3.422437906265259,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET ratings = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            RETURN r.rating\n)\n\nRETURN AVERAGE(ratings)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q018,which business has the most number of checkins,DeepSeek-Coder,"FOR b IN Businesses
+    COLLECT business_id = b.business_id, name = b.name
+    WITH COUNT INTO checkin_count
+
+    SORT checkin_count DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: business_id,
+        name: name,
+        checkin_count: checkin_count
+    }","FOR b IN Businesses
+    COLLECT business_id = b.business_id, name = b.name
+    WITH COUNT INTO checkin_count
+
+    SORT checkin_count DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: business_id,
+        name: name,
+        checkin_count: checkin_count
+    }",True,False,0,3.7773802280426025,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    COLLECT business_id = b.business_id, name = b.name\n    WITH COUNT INTO checkin_count\n\n    SORT checkin_count DESC\n    LIMIT 1\n\n    RETURN {\n        business_id: business_id,\n        name: name,\n        checkin_count: checkin_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q019,List all the reviews by Michelle for Italian restaurants,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.user_id == ""Michelle""
+    LET business = DOCUMENT(""Businesses"", r.business_id)
+    FILTER business.categories CONTAINS ""Italian""
+    RETURN r","FOR r IN Reviews
+    FILTER r.user_id == ""Michelle""
+    LET business = DOCUMENT(""Businesses"", r.business_id)
+    FILTER business.categories CONTAINS ""Italian""
+    RETURN r",True,False,0,3.2065200805664062,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR r IN Reviews\n    FILTER r.user_id == \""Michelle\""\n    LET business = DOCUMENT(\""Businesses\"", r.business_id)\n    FILTER business.categories CONTAINS \""Italian\""\n    RETURN r"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q020,What is the number of checkins for “Cafe Zinho” on fridays,DeepSeek-Coder,"LET checkins = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER DAY_OF_WEEK(ch.day) == 6
+            RETURN ch.count
+)
+
+RETURN SUM(checkins)","LET checkins = (
+    FOR b IN Businesses
+        FILTER b.name == ""Cafe Zinho""
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            FILTER DAY_OF_WEEK(ch.day) == 6
+            RETURN ch.count
+)
+
+RETURN SUM(checkins)",True,False,0,3.775071382522583,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET checkins = (\n    FOR b IN Businesses\n        FILTER b.name == \""Cafe Zinho\""\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            FILTER DAY_OF_WEEK(ch.day) == 6\n            RETURN ch.count\n)\n\nRETURN SUM(checkins)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q021,find the number of reviews written for “Cafe Zinho” restaurants in Texas,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.business_id IN (
+        FOR b IN Businesses
+            FILTER b.name == ""Cafe Zinho""
+            AND b.state == ""TX""
+            RETURN b.business_id
+    )
+    RETURN COUNT(r)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Texas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Reviews Written For “cafe Zinho” Restaurants""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.435251474380493,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR r IN Reviews\n    FILTER r.business_id IN (\n        FOR b IN Businesses\n            FILTER b.name == \""Cafe Zinho\""\n            AND b.state == \""TX\""\n            RETURN b.business_id\n    )\n    RETURN COUNT(r)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews Written For “cafe Zinho” Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews Written For “cafe Zinho” Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q022,find the user with the most number of reviews,DeepSeek-Coder,"FOR u IN Users
+    LET reviews = (
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r
+    )
+    SORT reviews.length DESC
+    LIMIT 1
+    RETURN {
+        user_id: u.user_id,
+        name: u.name,
+        review_count: LENGTH(reviews)
+    }","FOR u IN Users
+    LET reviews = (
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN r
+    )
+    SORT reviews.length DESC
+    LIMIT 1
+    RETURN {
+        user_id: u.user_id,
+        name: u.name,
+        review_count: LENGTH(reviews)
+    }",True,False,0,4.1129231452941895,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            RETURN r\n    )\n    SORT reviews.length DESC\n    LIMIT 1\n    RETURN {\n        user_id: u.user_id,\n        name: u.name,\n        review_count: LENGTH(reviews)\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q023,how many users reviewed Sushi Too in Pittsburgh,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Sushi Too""
+    FILTER b.city == ""Pittsburgh""
+
+    FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+        FOR u IN 1..1 INBOUND r WritesReview
+            RETURN DISTINCT u.user_id","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Pittsburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Users Reviewed Sushi Too""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,5.143619060516357,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Sushi Too\""\n    FILTER b.city == \""Pittsburgh\""\n\n    FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n        FOR u IN 1..1 INBOUND r WritesReview\n            RETURN DISTINCT u.user_id"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Pittsburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Users Reviewed Sushi Too\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Pittsburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Users Reviewed Sushi Too\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q024,What is the number of pet groomers in Edinburgh,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.6470861434936523,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers\""\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(businesses)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q025,How many pet groomers exist in Edinburgh,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Pet Groomers Exist""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.5362846851348877,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers\""\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(businesses)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers Exist\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Pet Groomers Exist\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q026,What is the number of restaurants in Pittsburgh rated 4.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+    FILTER b.rating == 4.5
+    RETURN COUNT(b)","FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+    FILTER b.rating == 4.5
+    RETURN COUNT(b)",True,False,0,2.4054558277130127,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Pittsburgh\""\n    FILTER b.rating == 4.5\n    RETURN COUNT(b)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q027,List all 5 star Italian restaurants,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating == 5
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.rating == 5
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,4.482024192810059,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating == 5\n\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n\n    FILTER \""Italian\"" IN categories\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q028,How many tips have been written in 2015,DeepSeek-Coder,"LET tips = (
+    FOR t IN Tips
+        FILTER t.year == 2015
+        RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)","LET tips = (
+    FOR t IN Tips
+        FILTER t.year == 2015
+        RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",True,False,0,2.6052353382110596,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET tips = (\n    FOR t IN Tips\n        FILTER t.year == 2015\n        RETURN DISTINCT t._id\n)\n\nRETURN LENGTH(tips)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q029,What is the total likes on tips from Niloofar,DeepSeek-Coder,"LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN t.likes
+)
+
+RETURN SUM(likes)","LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            RETURN t.likes
+)
+
+RETURN SUM(likes)",True,False,0,2.784454822540283,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET likes = (\n    FOR u IN Users\n        FILTER u.name == \""Niloofar\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            RETURN t.likes\n)\n\nRETURN SUM(likes)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q030,What is the total likes on tips about “Cafe Zinho”,DeepSeek-Coder,"LET total_likes = (
+    FOR t IN 1..1 OUTBOUND 'Businesses/Cafe Zinho' TipsBusiness
+        RETURN t.likes
+)
+RETURN SUM(total_likes)","LET total_likes = (
+    FOR t IN 1..1 OUTBOUND 'Businesses/Cafe Zinho' TipsBusiness
+        RETURN t.likes
+)
+RETURN SUM(total_likes)",True,False,0,2.6204893589019775,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET total_likes = (\n    FOR t IN 1..1 OUTBOUND 'Businesses/Cafe Zinho' TipsBusiness\n        RETURN t.likes\n)\nRETURN SUM(total_likes)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q031,What is the total likes on tips from Niloofar about “Cafe Zinho”,DeepSeek-Coder,"LET likes = (
+    FOR u IN Users
+        FILTER u.name == ""Niloofar""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.likes != null
+
+            FOR b IN 1..1 INBOUND t TipsBusiness
+                FILTER b.name == ""Cafe Zinho""
+
+                RETURN t.likes
+)
+
+RETURN SUM(likes)","RETURN (
+  FOR u IN Users
+    FILTER u.name == ""Niloofar""
+    FOR t IN 1..1 OUTBOUND u WritesTip
+      FILTER t.likes != null
+      FOR b IN 1..1 INBOUND t.business_id TipsBusiness
+        FILTER b.name == ""Cafe Zinho""
+        RETURN t.likes
+)",False,True,2,14.645996809005737,"[""Unknown attribute 'name' in collection 'Tips'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""LET likes = (\n    FOR u IN Users\n        FILTER u.name == \""Niloofar\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            FILTER t.likes != null\n\n            FOR b IN 1..1 INBOUND t TipsBusiness\n                FILTER b.name == \""Cafe Zinho\""\n\n                RETURN t.likes\n)\n\nRETURN SUM(likes)"", ""aql"": ""LET likes = (\n    FOR u IN Users\n        FILTER u.name == \""Niloofar\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            FILTER t.likes != null\n\n            FOR b IN 1..1 INBOUND t.business_id TipsBusiness\n                FILTER b.name == \""Cafe Zinho\""\n\n                RETURN t.likes\n)\n\nRETURN SUM(likes)"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'name' in collection 'Tips'.""], ""warnings"": [], ""used_collections"": [""TipsBusiness"", ""Users"", ""WritesTip""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Tips"", ""attribute"": ""name""}]}, ""generation_time"": 5.323269844055176}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""LET likes = (\n    FOR u IN Users\n        FILTER u.name == \""Niloofar\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            FILTER t.likes != null\n\n            FOR b IN 1..1 INBOUND t.business_id TipsBusiness\n                FILTER b.name == \""Cafe Zinho\""\n\n                RETURN t.likes\n)\n\nRETURN SUM(likes)"", ""aql"": ""RETURN (\n  FOR u IN Users\n    FILTER u.name == \""Niloofar\""\n    FOR t IN 1..1 OUTBOUND u WritesTip\n      FILTER t.likes != null\n      FOR b IN 1..1 INBOUND t.business_id TipsBusiness\n        FILTER b.name == \""Cafe Zinho\""\n        RETURN t.likes\n)"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'name' in collection 'Tips'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""TipsBusiness"", ""Users"", ""WritesTip""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Tips"", ""attribute"": ""name""}]}, ""generation_time"": 5.22055459022522}, {""step"": ""privacy_check"", ""aql"": ""RETURN (\n  FOR u IN Users\n    FILTER u.name == \""Niloofar\""\n    FOR t IN 1..1 OUTBOUND u WritesTip\n      FILTER t.likes != null\n      FOR b IN 1..1 INBOUND t.business_id TipsBusiness\n        FILTER b.name == \""Cafe Zinho\""\n        RETURN t.likes\n)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q032,How many tips has Michelle written in 2014,DeepSeek-Coder,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR t IN 1..1 OUTBOUND u._id WritesTip
+            FILTER t.year == 2014
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)","LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR t IN 1..1 OUTBOUND u._id WritesTip
+            FILTER t.year == 2014
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",True,False,0,3.8586485385894775,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET tips = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n        FOR t IN 1..1 OUTBOUND u._id WritesTip\n            FILTER t.year == 2014\n            RETURN DISTINCT t._id\n)\n\nRETURN LENGTH(tips)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q033,How many tips has Michelle written in April,DeepSeek-Coder,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.month == ""April""
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""April""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Tips Has Michelle Written""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.1839957237243652,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET tips = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            FILTER t.month == \""April\""\n            RETURN DISTINCT t._id\n)\n\nRETURN LENGTH(tips)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""April\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Tips Has Michelle Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""April\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Tips Has Michelle Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q034,what is the number of restaurants in Texas,DeepSeek-Coder,"RETURN LENGTH(
+    FOR b IN Businesses
+        FILTER b.state == ""Texas""
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+        FILTER ""Restaurants"" IN categories
+        RETURN b._id
+)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Texas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.5612905025482178,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""RETURN LENGTH(\n    FOR b IN Businesses\n        FILTER b.state == \""Texas\""\n        LET categories = (\n            FOR c IN 1..1 OUTBOUND b BusinessCategory\n                RETURN c.category_name\n        )\n        FILTER \""Restaurants\"" IN categories\n        RETURN b._id\n)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q035,which neighborhood has the most number of businesses in Madison,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            RETURN n.neighborhood_name
+)
+
+RETURN LENGTH(businesses)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Businesses""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.2080821990966797,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n            RETURN n.neighborhood_name\n)\n\nRETURN LENGTH(businesses)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Businesses\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Businesses\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q036,List all the neighborhoods with Italian restaurants in Madison,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.is_open
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Italian""
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name","FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.is_open
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Italian""
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name",True,False,0,4.830428600311279,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Madison\""\n    FILTER b.is_open\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Italian\""\n            RETURN c.category_name\n    )\n    FILTER \""Italian\"" IN categories\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        RETURN DISTINCT n.neighborhood_name"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q037,List all the neighborhoods with Italian restaurants rated less than 2.5 in Madison,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FILTER b.rating < 2.5
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name","FOR b IN Businesses
+    FILTER b.city == ""Madison""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    FILTER b.rating < 2.5
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN DISTINCT n.neighborhood_name",True,False,0,5.006163120269775,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Madison\""\n\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n\n    FILTER \""Italian\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n\n    FILTER b.rating < 2.5\n\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        RETURN DISTINCT n.neighborhood_name"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q038,Which neighborhood in Madison has the Italian restaurant with the highest stars,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.rating > 0
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.rating DESC
+    LIMIT 1
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN n.neighborhood_name","FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.rating > 0
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.rating DESC
+    LIMIT 1
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN n.neighborhood_name",True,False,0,5.28481125831604,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Madison\""\n    FILTER b.rating > 0\n\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n\n    FILTER \""Italian\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n\n    SORT b.rating DESC\n    LIMIT 1\n\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        RETURN n.neighborhood_name"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q039,List all businesses with rating 3.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating == 3.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        full_address: b.full_address,
+        city: b.city,
+        latitude: b.latitude,
+        longitude: b.longitude,
+        review_count: b.review_count,
+        is_open: b.is_open,
+        rating: b.rating,
+        state: b.state
+    }","FOR b IN Businesses
+    FILTER b.rating == 3.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        full_address: b.full_address,
+        city: b.city,
+        latitude: b.latitude,
+        longitude: b.longitude,
+        review_count: b.review_count,
+        is_open: b.is_open,
+        rating: b.rating,
+        state: b.state
+    }",True,False,0,4.843133449554443,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating == 3.5\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        full_address: b.full_address,\n        city: b.city,\n        latitude: b.latitude,\n        longitude: b.longitude,\n        review_count: b.review_count,\n        is_open: b.is_open,\n        rating: b.rating,\n        state: b.state\n    }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""full_address"", ""latitude"", ""longitude""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q040,find all the restaurants in Texas,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        RETURN DISTINCT b.business_id, b.name, b.city, b.state, b.rating","FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Restaurants""
+        RETURN DISTINCT b.business_id, b.name, b.city, b.state, b.rating",True,False,0,3.4834372997283936,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.state == \""Texas\""\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Restaurants\""\n        RETURN DISTINCT b.business_id, b.name, b.city, b.state, b.rating"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q041,Find all the reviews for all pet groomers with more than 100 reviews,DeepSeek-Coder,"FOR b IN 1..1 OUTBOUND ""Businesses"" BusinessCategory
+    FILTER b.category_name == ""Pet Groomers""
+
+    FOR r IN 1..1 INBOUND b ReviewsBusiness
+        FILTER r.review_count > 100
+
+        RETURN {
+            business_id: b.business_id,
+            business_name: b.name,
+            user_id: r.user_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }","FOR b IN 1..1 OUTBOUND ""Businesses"" BusinessCategory
+    FILTER b.category_name == ""Pet Groomers""
+
+    FOR r IN 1..1 INBOUND b ReviewsBusiness
+        FILTER r.review_count > 100
+
+        RETURN {
+            business_id: b.business_id,
+            business_name: b.name,
+            user_id: r.user_id,
+            rating: r.rating,
+            text: r.text,
+            year: r.year,
+            month: r.month
+        }",False,False,2,18.306426525115967,"[""Unknown attribute 'review_count' in collection 'Reviews'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN 1..1 OUTBOUND \""Businesses\"" BusinessCategory\n    FILTER b.category_name == \""Pet Groomers\""\n\n    FOR r IN 1..1 INBOUND b ReviewsBusiness\n        FILTER r.review_count > 100\n\n        RETURN {\n            business_id: b.business_id,\n            business_name: b.name,\n            user_id: r.user_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n        }"", ""aql"": ""FOR b IN 1..1 OUTBOUND \""Businesses\"" BusinessCategory\n    FILTER b.category_name == \""Pet Groomers\""\n\n    FOR r IN 1..1 INBOUND b ReviewsBusiness\n        FILTER r.review_count > 100\n\n        RETURN {\n            business_id: b.business_id,\n            business_name: b.name,\n            user_id: r.user_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n         }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'review_count' in collection 'Reviews'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Reviews"", ""attribute"": ""review_count""}]}, ""generation_time"": 6.428492784500122}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN 1..1 OUTBOUND \""Businesses\"" BusinessCategory\n    FILTER b.category_name == \""Pet Groomers\""\n\n    FOR r IN 1..1 INBOUND b ReviewsBusiness\n        FILTER r.review_count > 100\n\n        RETURN {\n            business_id: b.business_id,\n            business_name: b.name,\n            user_id: r.user_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n         }"", ""aql"": ""FOR b IN 1..1 OUTBOUND \""Businesses\"" BusinessCategory\n    FILTER b.category_name == \""Pet Groomers\""\n\n    FOR r IN 1..1 INBOUND b ReviewsBusiness\n        FILTER r.review_count > 100\n\n        RETURN {\n            business_id: b.business_id,\n            business_name: b.name,\n            user_id: r.user_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n        }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'review_count' in collection 'Reviews'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Reviews"", ""attribute"": ""review_count""}]}, ""generation_time"": 6.62649941444397}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN 1..1 OUTBOUND \""Businesses\"" BusinessCategory\n    FILTER b.category_name == \""Pet Groomers\""\n\n    FOR r IN 1..1 INBOUND b ReviewsBusiness\n        FILTER r.review_count > 100\n\n        RETURN {\n            business_id: b.business_id,\n            business_name: b.name,\n            user_id: r.user_id,\n            rating: r.rating,\n            text: r.text,\n            year: r.year,\n            month: r.month\n        }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q042,Find all pet groomers which have more than 100 reviews,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.review_count > 100
+    FOR c IN 1..1 OUTBOUND b ReviewsBusiness
+        FILTER c.business_id == b.business_id
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            business_name: b.name
+        }","FOR b IN Businesses
+    FILTER b.review_count > 100
+    FOR c IN 1..1 OUTBOUND b ReviewsBusiness
+        FILTER c.business_id == b.business_id
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            business_name: b.name
+        }",True,False,0,4.095541715621948,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.review_count > 100\n    FOR c IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER c.business_id == b.business_id\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            business_name: b.name\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q043,Find all Chinese restaurants in Dallas with at least 4 stars,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Chinese"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating >= 4
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Chinese"" IN categories
+    FILTER ""Restaurants"" IN categories
+    FILTER b.rating >= 4
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,5.249866724014282,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n    FILTER \""Chinese\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n    FILTER b.rating >= 4\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q044,Find all Mexican restaurants in Dallas with a rating above 3.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FOR nn IN Neighborhoods
+                FILTER b.business_id == n.business_id AND n.neighborhood_id == nn.id
+                RETURN nn.neighborhood_name
+        )
+
+    FILTER ""Mexican"" IN categories
+    FILTER b.rating > 3.5
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas"" AND b.name CONTAINS ""Mexican""
+    FILTER b.rating > 3.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,True,1,11.688886880874634,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET categories = (\n        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n            FOR nn IN Neighborhoods\n                FILTER b.business_id == n.business_id AND n.neighborhood_id == nn.id\n                RETURN nn.neighborhood_name\n        )\n\n    FILTER \""Mexican\"" IN categories\n    FILTER b.rating > 3.5\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" AND b.name CONTAINS \""Mexican\""\n    FILTER b.rating > 3.5\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses""], ""invalid_attributes"": []}, ""generation_time"": 5.153440952301025}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" AND b.name CONTAINS \""Mexican\""\n    FILTER b.rating > 3.5\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q045,What are all the gyms in Los Angeles?,DeepSeek-Coder,"RETURN DISTINCT b.name
+FROM Businesses b
+INNER JOIN BusinessCategory bc
+    ON bc.business_id == b.business_id
+FILTER b.city == ""Los Angeles""
+    AND bc.category_name == ""Gyms""","RETURN DISTINCT b.name
+FROM Businesses b
+INNER JOIN BusinessCategory bc
+    ON bc.business_id == b.business_id
+FILTER b.city == ""Los Angeles""
+    AND bc.category_name == ""Gyms""",True,False,0,3.4920566082000732,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""RETURN DISTINCT b.name\nFROM Businesses b\nINNER JOIN BusinessCategory bc\n    ON bc.business_id == b.business_id\nFILTER b.city == \""Los Angeles\""\n    AND bc.category_name == \""Gyms\"""", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q046,What is the number of dentists in Los Angeles?,DeepSeek-Coder,"LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.4936256408691406,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET dentists = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Dentists\""\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(dentists)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Dentists\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Dentists\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q047,How many dentists in Los Angeles have a rating above 4?,DeepSeek-Coder,"LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+            FILTER b.rating > 4
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)","LET dentists = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Dentists""
+            FILTER b.rating > 4
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(dentists)",True,False,0,3.9622645378112793,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET dentists = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Dentists\""\n            FILTER b.rating > 4\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(dentists)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q048,Find all bars in Dallas,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+        RETURN DISTINCT b","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+        RETURN DISTINCT b",True,False,0,2.8889124393463135,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bars\""\n        RETURN DISTINCT b"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q049,Find all dance schools in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Dance Schools""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Dance Schools""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",True,False,0,3.5955159664154053,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Dance Schools\""\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q050,How many people reviewed the restaurant Texas de Brazil in Dallas Texas?,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.business_id == ""Texas de Brazil""
+    RETURN COUNT(DISTINCT r.user_id)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas Texas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""People Reviewed The Restaurant Texas De Brazil""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,2.2977705001831055,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR r IN Reviews\n    FILTER r.business_id == \""Texas de Brazil\""\n    RETURN COUNT(DISTINCT r.user_id)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""People Reviewed The Restaurant Texas De Brazil\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""People Reviewed The Restaurant Texas De Brazil\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q051,How many people reviewed Bistro Di Napoli in 2015?,DeepSeek-Coder,"LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro Di Napoli""
+        FILTER b.city == ""San Francisco""
+        FILTER b.state == ""California""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2015
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u._id
+)
+
+RETURN LENGTH(users)","LET users = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro Di Napoli""
+        FILTER b.city == ""San Francisco""
+        FILTER b.state == ""California""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2015
+            FOR u IN 1..1 INBOUND r WritesReview
+                RETURN DISTINCT u._id
+)
+
+RETURN LENGTH(users)",True,False,0,4.818799734115601,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET users = (\n    FOR b IN Businesses\n        FILTER b.name == \""Bistro Di Napoli\""\n        FILTER b.city == \""San Francisco\""\n        FILTER b.state == \""California\""\n\n        FOR r IN 1..1 INBOUND b ReviewsBusiness\n            FILTER r.year == 2015\n            FOR u IN 1..1 INBOUND r WritesReview\n                RETURN DISTINCT u._id\n)\n\nRETURN LENGTH(users)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q052,Find all restaurants in Los Angeles with more than 100 reviews,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    LET categories = (
+        FOR r IN 1..1 OUTBOUND b BusinessCategory
+            RETURN r.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    FILTER b.review_count > 100
+    RETURN b","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    LET categories = (
+        FOR r IN 1..1 OUTBOUND b BusinessCategory
+            RETURN r.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    FILTER b.review_count > 100
+    RETURN b",True,False,0,3.8200628757476807,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    LET categories = (\n        FOR r IN 1..1 OUTBOUND b BusinessCategory\n            RETURN r.category_name\n    )\n    FILTER \""Restaurants\"" IN categories\n    FILTER b.review_count > 100\n    RETURN b"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q053,How many restaurants are there in the Hazelwood district of Dallas?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Restaurants"" IN categories
+
+    RETURN COUNT(b)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""the Hazelwood district of Dallas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.493861675262451,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n\n    FILTER \""Restaurants\"" IN categories\n\n    RETURN COUNT(b)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""the Hazelwood district of Dallas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""the Hazelwood district of Dallas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q054,Find all hotels in Dallas with at least 50 reviews,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.categories CONTAINS ""Hotels""
+    FILTER b.review_count >= 50
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.categories CONTAINS ""Hotels""
+    FILTER b.review_count >= 50
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",False,False,2,12.52332878112793,"[""Unknown attribute 'categories' in collection 'Businesses'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.categories CONTAINS \""Hotels\""\n    FILTER b.review_count >= 50\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.categories CONTAINS \""Hotels\""\n    FILTER b.review_count >= 50\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'categories' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""categories""}]}, ""generation_time"": 5.299777507781982}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.categories CONTAINS \""Hotels\""\n    FILTER b.review_count >= 50\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.categories CONTAINS \""Hotels\""\n    FILTER b.review_count >= 50\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'categories' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""categories""}]}, ""generation_time"": 3.130434274673462}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.categories CONTAINS \""Hotels\""\n    FILTER b.review_count >= 50\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q055,Find all users who reviewed restaurant Mesa Grill,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.name == ""Mesa Grill""
+    FOR u IN 1..1 INBOUND r WritesReview
+        RETURN DISTINCT {
+            user_id: u.user_id,
+            name: u.name
+        }","FOR u IN Users
+    FILTER u.name  IN  [""Mesa Grill""]
+    FOR r IN WritesReview
+        FILTER r.user_id  IN  u.user_id
+        RETURN DISTINCT  {
+            user_id: u.user_id,
+            name: u.name
+         }",False,True,2,13.440895080566406,"[""Unknown attribute 'user_id' in collection 'WritesReview'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR r IN Reviews\n    FILTER r.name == \""Mesa Grill\""\n    FOR u IN 1..1 INBOUND r WritesReview\n        RETURN DISTINCT {\n            user_id: u.user_id,\n            name: u.name\n        }"", ""aql"": ""FOR u IN Users\n    FILTER u.name  IN [\""Mesa Grill\""]\n    FOR r IN WritesReview\n        FILTER r.user_id == u.user_id\n        RETURN DISTINCT {\n            user_id: u.user_id,\n            name: u.name\n        }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'user_id' in collection 'WritesReview'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Users"", ""WritesReview""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""WritesReview"", ""attribute"": ""user_id""}]}, ""generation_time"": 4.613913297653198}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR u IN Users\n    FILTER u.name  IN [\""Mesa Grill\""]\n    FOR r IN WritesReview\n        FILTER r.user_id == u.user_id\n        RETURN DISTINCT {\n            user_id: u.user_id,\n            name: u.name\n        }"", ""aql"": ""FOR u IN Users\n    FILTER u.name  IN  [\""Mesa Grill\""]\n    FOR r IN WritesReview\n        FILTER r.user_id  IN  u.user_id\n        RETURN DISTINCT  {\n            user_id: u.user_id,\n            name: u.name\n         }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'user_id' in collection 'WritesReview'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Users"", ""WritesReview""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""WritesReview"", ""attribute"": ""user_id""}]}, ""generation_time"": 5.073434829711914}, {""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name  IN  [\""Mesa Grill\""]\n    FOR r IN WritesReview\n        FILTER r.user_id  IN  u.user_id\n        RETURN DISTINCT  {\n            user_id: u.user_id,\n            name: u.name\n         }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q056,How many Starbucks are there in Dallas Texas?,DeepSeek-Coder,"LET starbucks = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas"" AND b.state == ""Texas""
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Starbucks""
+            RETURN DISTINCT b.business_id
+)
+
+RETURN LENGTH(starbucks)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas Texas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Starbucks""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,4.495333909988403,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET starbucks = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas\"" AND b.state == \""Texas\""\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Starbucks\""\n            RETURN DISTINCT b.business_id\n)\n\nRETURN LENGTH(starbucks)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Starbucks\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas Texas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Starbucks\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q057,How many reviews does Acacia Cafe have?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Acacia Cafe""
+    RETURN COUNT(
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            RETURN r
+    )","FOR b IN Businesses
+    FILTER b.name == ""Acacia Cafe""
+    RETURN COUNT(
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            RETURN r
+    )",True,False,0,2.7085437774658203,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Acacia Cafe\""\n    RETURN COUNT(\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            RETURN r\n    )"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q058,Find all restaurants with valet service in Dallas Texas,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas"" 
+    FILTER b.state == ""Texas""
+    FILTER b.attributes[""valet_service""] == true
+    RETURN b","Sorry, but I can't assist with that.",True,True,1,4.987027883529663,[],[],True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" \n    FILTER b.state == \""Texas\""\n    FILTER b.attributes[\""valet_service\""] == true\n    RETURN b"", ""aql"": ""Sorry, but I can't assist with that."", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [], ""invalid_attributes"": []}, ""generation_time"": 2.255715847015381}, {""step"": ""privacy_check"", ""aql"": ""Sorry, but I can't assist with that."", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q059,List the addresses of all Walmarts in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER CONTAINS(LOWER(b.name), ""walmart"")
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        full_address: b.full_address
+    }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER CONTAINS(LOWER(b.name), ""walmart"")
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        full_address: b.full_address
+    }",True,False,0,3.767580032348633,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER CONTAINS(LOWER(b.name), \""walmart\"")\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        full_address: b.full_address\n    }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""full_address""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q060,Find all restaurants reviewed by Patrick in Los Angeles,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.user_id == ""Patrick""
+
+    FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+        FILTER b.city == ""Los Angeles""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Restaurants"" IN categories
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }","FOR r IN Reviews
+    FILTER r.user_id == ""Patrick""
+
+    FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+        FILTER b.city == ""Los Angeles""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                RETURN c.category_name
+        )
+
+        FILTER ""Restaurants"" IN categories
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",True,False,0,5.3878395557403564,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR r IN Reviews\n    FILTER r.user_id == \""Patrick\""\n\n    FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n        FILTER b.city == \""Los Angeles\""\n\n        LET categories = (\n            FOR c IN 1..1 OUTBOUND b BusinessCategory\n                RETURN c.category_name\n        )\n\n        FILTER \""Restaurants\"" IN categories\n\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q061,Find all Italian restaurants in the Meadowood neighborhood of Madison,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.name IN (
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Meadowood""
+            RETURN b.name
+    )
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    RETURN b","FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.name IN (
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Meadowood""
+            RETURN b.name
+    )
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    RETURN b",True,False,0,5.097664833068848,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Madison\""\n    FILTER b.name IN (\n        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n            FILTER n.neighborhood_name == \""Meadowood\""\n            RETURN b.name\n    )\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n    FILTER \""Italian\"" IN categories\n    RETURN b"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q062,Find all bars reviewed by Patrick,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.user_id == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.is_open == true
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Bars""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    rating: b.rating,
+                    review_count: b.review_count
+                }","FOR u IN Users
+    FILTER u.user_id == ""Patrick""
+
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.is_open == true
+
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Bars""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    rating: b.rating,
+                    review_count: b.review_count
+                }",True,False,0,5.707536697387695,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.user_id == \""Patrick\""\n\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.is_open == true\n\n            FOR c IN 1..1 OUTBOUND b BusinessCategory\n                FILTER c.category_name == \""Bars\""\n\n                RETURN DISTINCT {\n                    business_id: b.business_id,\n                    name: b.name,\n                    rating: b.rating,\n                    review_count: b.review_count\n                }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q063,Find all bars reviewed by Patrick with at least 3 stars,DeepSeek-Coder,"FOR b IN 1..1 OUTBOUND ""Users/Patrick"" ReviewsBusiness
+    FILTER b.rating >= 3
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            state: b.state,
+            rating: b.rating
+        }","FOR b IN 1..1 OUTBOUND ""Users/Patrick"" ReviewsBusiness
+    FILTER b.rating >= 3
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            state: b.state,
+            rating: b.rating
+        }",True,False,0,4.75977349281311,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN 1..1 OUTBOUND \""Users/Patrick\"" ReviewsBusiness\n    FILTER b.rating >= 3\n\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bars\""\n\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            city: b.city,\n            state: b.state,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q064,Find all bars in Los Angeles with at least 30 reviews,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FOR r IN 1..1 OUTBOUND n ReviewsBusiness
+            FILTER r.rating >= 30
+
+            FOR c IN 1..1 OUTBOUND r BusinessCategory
+                FILTER c.category_name == ""Bars""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    city: b.city,
+                    state: b.state,
+                    rating: b.rating
+                 }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FOR r IN 1..1 OUTBOUND n ReviewsBusiness
+            FILTER r.rating >= 30
+
+            FOR c IN 1..1 OUTBOUND r BusinessCategory
+                FILTER c.category_name == ""Bars""
+
+                RETURN DISTINCT {
+                    business_id: b.business_id,
+                    name: b.name,
+                    city: b.city,
+                    state: b.state,
+                    rating: b.rating
+                 }",True,False,0,5.821527481079102,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        FOR r IN 1..1 OUTBOUND n ReviewsBusiness\n            FILTER r.rating >= 30\n\n            FOR c IN 1..1 OUTBOUND r BusinessCategory\n                FILTER c.category_name == \""Bars\""\n\n                RETURN DISTINCT {\n                    business_id: b.business_id,\n                    name: b.name,\n                    city: b.city,\n                    state: b.state,\n                    rating: b.rating\n                 }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q065,Find all bars in Los Angeles with at least 30 reviews and average rating above 3 stars,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+    FILTER AVERAGE(FOR r IN 1..1 OUTBOUND b ReviewsBusiness RETURN r.rating) > 3
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating,
+            review_count: b.review_count
+        }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.review_count >= 30
+    FILTER AVERAGE(FOR r IN 1..1 OUTBOUND b ReviewsBusiness RETURN r.rating) > 3
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating,
+            review_count: b.review_count
+        }",True,False,0,5.456725597381592,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.review_count >= 30\n    FILTER AVERAGE(FOR r IN 1..1 OUTBOUND b ReviewsBusiness RETURN r.rating) > 3\n\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bars\""\n\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            rating: b.rating,\n            review_count: b.review_count\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q066,How many Egyptian restaurants are there in Edinburgh?,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        LET categories = (
+            FOR c IN 1..1 OUTBOUND b BusinessCategory
+                FILTER c.category_name == ""Egyptian Restaurants""
+                RETURN c.category_name
+        )
+
+        FILTER ""Egyptian Restaurants"" IN categories
+        RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(businesses)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Edinburgh""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Egyptian Restaurants""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,4.8488898277282715,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        LET categories = (\n            FOR c IN 1..1 OUTBOUND b BusinessCategory\n                FILTER c.category_name == \""Egyptian Restaurants\""\n                RETURN c.category_name\n        )\n\n        FILTER \""Egyptian Restaurants\"" IN categories\n        RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(businesses)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Egyptian Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Edinburgh\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Egyptian Restaurants\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q067,Find the average number of checkins in restaurant Barrio Café per day,DeepSeek-Coder,"LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Barrio Café""
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            COLLECT day = ch.day
+            AGGREGATE total_checkins = SUM(ch.count)
+            SORT day
+            RETURN {
+                day: day,
+                total_checkins: total_checkins
+            }
+)
+RETURN AVG(values.total_checkins)","LET values = (
+    FOR b IN Businesses
+        FILTER b.name == ""Barrio Café""
+        FOR ch IN 1..1 OUTBOUND b BusinessCheckin
+            COLLECT day = ch.day
+            AGGREGATE total_checkins = SUM(ch.count)
+            SORT day
+            RETURN {
+                day: day,
+                total_checkins: total_checkins
+            }
+)
+RETURN AVG(values.total_checkins)",True,False,0,4.684953212738037,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET values = (\n    FOR b IN Businesses\n        FILTER b.name == \""Barrio Café\""\n        FOR ch IN 1..1 OUTBOUND b BusinessCheckin\n            COLLECT day = ch.day\n            AGGREGATE total_checkins = SUM(ch.count)\n            SORT day\n            RETURN {\n                day: day,\n                total_checkins: total_checkins\n            }\n)\nRETURN AVG(values.total_checkins)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q068,Which Indian restaurant in Dallas has the highest rating?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Indian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.rating DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+
+    FILTER ""Indian"" IN categories
+    FILTER ""Restaurants"" IN categories
+
+    SORT b.rating DESC
+    LIMIT 1
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,5.639068126678467,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n\n    FILTER \""Indian\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n\n    SORT b.rating DESC\n    LIMIT 1\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q069,Which restaurants in Dallas were reviewed by user Patrick?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+
+    LET reviews = (
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            FILTER r.reviewer_name == ""Patrick""
+            RETURN r.business_id
+    )
+
+    FILTER b.business_id IN reviews
+
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas"" AND b.review_count > 0
+    LET reviews = (
+        FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+            FILTER r.reviewer_name == ""Patrick""
+            RETURN r.business_id
+      )
+    FILTER b.business_id IN reviews
+    RETURN  {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+      }",False,True,2,18.885162591934204,"[""Unknown attribute 'reviewer_name' in collection 'Businesses'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            FILTER r.reviewer_name == \""Patrick\""\n            RETURN r.business_id\n    )\n\n    FILTER b.business_id IN reviews\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            FILTER r.reviewer_name == \""Patrick\""\n            RETURN r.business_id\n     )\n\n    FILTER b.business_id IN reviews\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n     }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'reviewer_name' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses"", ""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Businesses"", ""attribute"": ""reviewer_name""}]}, ""generation_time"": 6.551554441452026}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            FILTER r.reviewer_name == \""Patrick\""\n            RETURN r.business_id\n     )\n\n    FILTER b.business_id IN reviews\n\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n     }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" AND b.review_count > 0\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            FILTER r.reviewer_name == \""Patrick\""\n            RETURN r.business_id\n      )\n    FILTER b.business_id IN reviews\n    RETURN  {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n      }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'reviewer_name' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses"", ""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Businesses"", ""attribute"": ""reviewer_name""}]}, ""generation_time"": 6.994519948959351}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" AND b.review_count > 0\n    LET reviews = (\n        FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n            FILTER r.reviewer_name == \""Patrick\""\n            RETURN r.business_id\n      )\n    FILTER b.business_id IN reviews\n    RETURN  {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n      }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q070,How many businesses are there in the Stone Meadows neighborhood in Madison?,DeepSeek-Coder,"LET business_count = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Stone Meadows""
+            RETURN b._id
+)
+
+RETURN LENGTH(business_count)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""the Stone Meadows neighborhood in Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Businesses""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,4.3607258796691895,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET business_count = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n            FILTER n.neighborhood_name == \""Stone Meadows\""\n            RETURN b._id\n)\n\nRETURN LENGTH(business_count)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""the Stone Meadows neighborhood in Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Businesses\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""the Stone Meadows neighborhood in Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Businesses\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q071,Find all users who have written tips for Barrio Café in 2015,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Barrio Café"" AND b.year == 2015
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t.user_id Users
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+             }","FOR b IN Businesses
+    FILTER b.name == ""Barrio Café"" AND b.year == 2015
+
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t.user_id Users
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",False,True,2,14.245845794677734,"[""Unknown attribute 'year' in collection 'Businesses'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Barrio Café\"" AND b.year == 2015\n\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t.user_id Users\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n             }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Barrio Café\"" AND b.year == 2015\n\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t.user_id Users\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n            }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'year' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses"", ""TipsBusiness"", ""Users""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""year""}]}, ""generation_time"": 4.993799448013306}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Barrio Café\"" AND b.year == 2015\n\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t.user_id Users\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n            }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Barrio Café\"" AND b.year == 2015\n\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t.user_id Users\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n            }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'year' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses"", ""TipsBusiness"", ""Users""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""year""}]}, ""generation_time"": 5.274935245513916}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Barrio Café\"" AND b.year == 2015\n\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t.user_id Users\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n            }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q072,Find all businesses in Texas with a rating below 2,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    FILTER b.rating < 2
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }","FOR b IN Businesses
+    FILTER b.state == ""Texas""
+    FILTER b.rating < 2
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        city: b.city,
+        state: b.state,
+        rating: b.rating
+    }",True,False,0,3.9141504764556885,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.state == \""Texas\""\n    FILTER b.rating < 2\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        city: b.city,\n        state: b.state,\n        rating: b.rating\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q073,Find all restaurants that serve seafood in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER CONTAINS_PATH(b._graph, ""BusinessCategory"", ""Categories"", ""name"", ""Seafood"")
+    FILTER b.name == ""Restaurant""
+    RETURN DISTINCT b.name","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FILTER b.name == ""Restaurant""
+    FILTER EXISTS(
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.name == ""Seafood""
+    )
+    RETURN DISTINCT b.name
+
+This corrected AQL query follows all the important rules and preserves the semantic constraints from the original question while avoiding any conditions that appear only in the previous incorrect AQL. The query filters out businesses in Los Angeles that are restaurants and serve seafood through a graph traversal from the BusinessCategory edge collection.",False,True,2,12.107030868530273,"[""Unknown attribute 'name' in collection 'Categories'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER CONTAINS_PATH(b._graph, \""BusinessCategory\"", \""Categories\"", \""name\"", \""Seafood\"")\n    FILTER b.name == \""Restaurant\""\n    RETURN DISTINCT b.name"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER CONTAINS_PATH(b._graph, \""BusinessCategory\"", \""Categories\"", \""name\"", \""Seafood\"")\n    FILTER b.name == \""Restaurant\""\n    RETURN DISTINCT b.name"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute '_graph' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""_graph""}]}, ""generation_time"": 4.23032546043396}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER CONTAINS_PATH(b._graph, \""BusinessCategory\"", \""Categories\"", \""name\"", \""Seafood\"")\n    FILTER b.name == \""Restaurant\""\n    RETURN DISTINCT b.name"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name == \""Restaurant\""\n    FILTER EXISTS(\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.name == \""Seafood\""\n    )\n    RETURN DISTINCT b.name\n\nThis corrected AQL query follows all the important rules and preserves the semantic constraints from the original question while avoiding any conditions that appear only in the previous incorrect AQL. The query filters out businesses in Los Angeles that are restaurants and serve seafood through a graph traversal from the BusinessCategory edge collection."", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'name' in collection 'Categories'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": [{""alias"": ""c"", ""collection"": ""Categories"", ""attribute"": ""name""}]}, ""generation_time"": 4.773105144500732}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FILTER b.name == \""Restaurant\""\n    FILTER EXISTS(\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.name == \""Seafood\""\n    )\n    RETURN DISTINCT b.name\n\nThis corrected AQL query follows all the important rules and preserves the semantic constraints from the original question while avoiding any conditions that appear only in the previous incorrect AQL. The query filters out businesses in Los Angeles that are restaurants and serve seafood through a graph traversal from the BusinessCategory edge collection."", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q074,Which Indian restaurant in Dallas has the most number of reviews?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR c IN 1..1 OUTBOUND b ReviewsBusiness
+        FILTER c.to_vertex.name == ""India""
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count,
+        rating: b.rating
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas"" && b.state == ""Texas""
+    FOR r IN 1..1 OUTBOUND b ReviewsBusiness
+        FILTER r.to_vertex.name == ""India""
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count,
+        rating: b.rating
+    }",False,True,2,17.62088418006897,"[""Unknown attribute 'to_vertex' in collection 'Businesses'.""]",[],True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FOR c IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER c.to_vertex.name == \""India\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count,\n        rating: b.rating\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" && b.state == \""Texas\""\n    FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER r.to_vertex.name == \""India\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count,\n        rating: b.rating\n    }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'to_vertex' in collection 'Businesses'.""], ""warnings"": [], ""used_collections"": [""Businesses"", ""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Businesses"", ""attribute"": ""to_vertex""}]}, ""generation_time"": 6.154829740524292}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" && b.state == \""Texas\""\n    FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER r.to_vertex.name == \""India\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count,\n        rating: b.rating\n    }"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" && b.state == \""Texas\""\n    FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER r.to_vertex.name == \""India\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count,\n        rating: b.rating\n    }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'to_vertex' in collection 'Businesses'.""], ""warnings"": [], ""used_collections"": [""Businesses"", ""ReviewsBusiness""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""Businesses"", ""attribute"": ""to_vertex""}]}, ""generation_time"": 6.438915967941284}, {""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" && b.state == \""Texas\""\n    FOR r IN 1..1 OUTBOUND b ReviewsBusiness\n        FILTER r.to_vertex.name == \""India\""\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count,\n        rating: b.rating\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q075,Which Italian restaurant in Dallas has the highest rating?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    SORT b.rating DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Italian"" IN categories
+    FILTER ""Restaurants"" IN categories
+    SORT b.rating DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,5.945652723312378,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n    FILTER \""Italian\"" IN categories\n    FILTER \""Restaurants\"" IN categories\n    SORT b.rating DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q076,How many bars in Dallas have a rating above 3.5?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 3.5
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+        RETURN COUNT(DISTINCT b.business_id)","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FILTER b.rating > 3.5
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bars""
+        RETURN COUNT(DISTINCT b.business_id)",True,False,0,3.6460626125335693,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FILTER b.rating > 3.5\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bars\""\n        RETURN COUNT(DISTINCT b.business_id)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q077,What is the number of businesses user Michelle reviews per month?,DeepSeek-Coder,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            COLLECT month = r.month, business = r.business_id
+            RETURN { month: month, count: COUNT(DISTINCT business) }
+)
+
+RETURN businesses","LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            COLLECT month = r.month, business = r.business_id
+            RETURN { month: month, count: COUNT(DISTINCT business) }
+)
+
+RETURN businesses",True,False,0,3.7889645099639893,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET businesses = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            COLLECT month = r.month, business = r.business_id\n            RETURN { month: month, count: COUNT(DISTINCT business) }\n)\n\nRETURN businesses"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q078,Find all pet hospices in Pittsburgh,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FOR c IN Categories
+            FILTER c.business_id == b.business_id && c.category_name == ""Pet Hospitals""
+            RETURN DISTINCT b.business_id","FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        FOR c IN Categories
+            FILTER c.business_id == b.business_id && c.category_name == ""Pet Hospitals""
+            RETURN DISTINCT b.business_id",True,False,0,3.8027658462524414,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Pittsburgh\""\n\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        FOR c IN Categories\n            FILTER c.business_id == b.business_id && c.category_name == \""Pet Hospitals\""\n            RETURN DISTINCT b.business_id"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q079,How many reviews has Adrienne written?,DeepSeek-Coder,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Adrienne""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)","LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Adrienne""
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",True,False,0,3.1444203853607178,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET reviews = (\n    FOR u IN Users\n        FILTER u.name == \""Adrienne\""\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            RETURN DISTINCT r._id\n)\n\nRETURN LENGTH(reviews)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q080,How many reviews has Michelle written in March 2014?,DeepSeek-Coder,"LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.month == 3 AND r.year == 2014
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)","LET reviews = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.month == 3 AND r.year == 2014
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",True,False,0,3.603410482406616,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET reviews = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            FILTER r.month == 3 AND r.year == 2014\n            RETURN DISTINCT r._id\n)\n\nRETURN LENGTH(reviews)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q081,How many businesses has Michelle reviewed in 2010?,DeepSeek-Coder,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                RETURN DISTINCT b.business_id
+)
+
+RETURN LENGTH(businesses)","LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2010
+
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                RETURN DISTINCT b.business_id
+)
+
+RETURN LENGTH(businesses)",True,False,0,4.138858795166016,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET businesses = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            FILTER r.year == 2010\n\n            FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n                RETURN DISTINCT b.business_id\n)\n\nRETURN LENGTH(businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q082,How many businesses in San Diego has Christine reviewed in 2010?,DeepSeek-Coder,"LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Christine""
+
+        FOR r IN 1..1 OUTBOUND u Reviews
+            FILTER r.year == 2010
+            FILTER r.city == ""San Diego""
+            RETURN DISTINCT r.business_id
+)
+
+RETURN LENGTH(businesses)","LET businesses = (
+    FOR u IN Users
+        FILTER u.name == ""Christine""
+
+        FOR r IN 1..1 OUTBOUND u Reviews
+            FILTER r.year == 2010
+            FILTER r.city == ""San Diego""
+            RETURN DISTINCT r.business_id
+)
+
+RETURN LENGTH(businesses)",True,False,0,3.9085006713867188,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET businesses = (\n    FOR u IN Users\n        FILTER u.name == \""Christine\""\n\n        FOR r IN 1..1 OUTBOUND u Reviews\n            FILTER r.year == 2010\n            FILTER r.city == \""San Diego\""\n            RETURN DISTINCT r.business_id\n)\n\nRETURN LENGTH(businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q083,Find all reviews by Patrick with a rating above 4,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.name == ""Patrick""
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.rating > 4
+        RETURN {
+            review_id: r.rid,
+            user_id: u.user_id,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text
+        }","FOR u IN Users
+    FILTER u.name == ""Patrick""
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FILTER r.rating > 4
+        RETURN {
+            review_id: r.rid,
+            user_id: u.user_id,
+            business_id: r.business_id,
+            rating: r.rating,
+            text: r.text
+        }",True,False,0,4.234587907791138,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name == \""Patrick\""\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FILTER r.rating > 4\n        RETURN {\n            review_id: r.rid,\n            user_id: u.user_id,\n            business_id: r.business_id,\n            rating: r.rating,\n            text: r.text\n        }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q084,Find all bistros in Pittsburgh,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bistros""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            rating: b.rating
+        }","FOR b IN Businesses
+    FILTER b.city == ""Pittsburgh""
+
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bistros""
+
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            city: b.city,
+            rating: b.rating
+        }",True,False,0,4.152570962905884,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Pittsburgh\""\n\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bistros\""\n\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            city: b.city,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q085,Find all bakeries in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bakeries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessCategory
+        FILTER c.category_name == ""Bakeries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",True,False,0,3.634261131286621,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FOR c IN 1..1 OUTBOUND b BusinessCategory\n        FILTER c.category_name == \""Bakeries\""\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q086,Find all Apple stores in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Apple Store""
+    FILTER b.city == ""Los Angeles""
+    RETURN DISTINCT b.full_address","FOR b IN Businesses
+    FILTER b.name == ""Apple Store""
+    FILTER b.city == ""Los Angeles""
+    RETURN DISTINCT b.full_address",True,False,0,2.330753803253174,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Apple Store\""\n    FILTER b.city == \""Los Angeles\""\n    RETURN DISTINCT b.full_address"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""full_address""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q087,How many Target are there in Los Angeles?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Target""
+    FILTER b.city == ""Los Angeles""
+    RETURN COUNT(b)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Los Angeles""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Target""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,2.0792477130889893,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Target\""\n    FILTER b.city == \""Los Angeles\""\n    RETURN COUNT(b)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Target\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Los Angeles\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Target\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q088,How many users have reviewed Irish pubs in Dallas?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            RETURN c.category_name
+    )
+    FILTER ""Irish Pubs"" IN categories
+    COLLECT users = DISTINCT u.user_id FOR u IN 1..1 OUTBOUND b ReviewsBusiness
+    RETURN LENGTH(users)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Dallas""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Users Have Reviewed Irish Pubs""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,4.378198623657227,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            RETURN c.category_name\n    )\n    FILTER \""Irish Pubs\"" IN categories\n    COLLECT users = DISTINCT u.user_id FOR u IN 1..1 OUTBOUND b ReviewsBusiness\n    RETURN LENGTH(users)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Users Have Reviewed Irish Pubs\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Dallas\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Users Have Reviewed Irish Pubs\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q089,Find users whose average review rating is below 3,DeepSeek-Coder,"LET ratings = (
+    FOR u IN Users
+        FILTER u.user_id IN (
+            FOR r IN WritesReview
+                FILTER u.user_id == r.user_id
+                RETURN r.rating
+        )
+        RETURN u.user_id
+)
+
+RETURN AVERAGE(ratings)","FOR u IN Users
+    FILTER AVG(FOR r IN 1..1 OUTBOUND u WritesReview RETURN r.rating) < 3
+    RETURN u.user_id",True,True,2,11.574223279953003,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""LET ratings = (\n    FOR u IN Users\n        FILTER u.user_id IN (\n            FOR r IN WritesReview\n                FILTER u.user_id == r.user_id\n                RETURN r.rating\n        )\n        RETURN u.user_id\n)\n\nRETURN AVERAGE(ratings)"", ""aql"": ""LET ratings = (\n    FOR u IN Users\n        FILTER u.user_id IN \n            (\n                FOR r IN WritesReview\n                    FILTER r.rating < 3\n                    RETURN r.user_id\n            )\n        RETURN u.user_id\n)\n\nRETURN AVERAGE(ratings)"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'rating' in collection 'WritesReview'."", ""Unknown attribute 'user_id' in collection 'WritesReview'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Users"", ""WritesReview""], ""invalid_attributes"": [{""alias"": ""r"", ""collection"": ""WritesReview"", ""attribute"": ""rating""}, {""alias"": ""r"", ""collection"": ""WritesReview"", ""attribute"": ""user_id""}]}, ""generation_time"": 4.355744361877441}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""LET ratings = (\n    FOR u IN Users\n        FILTER u.user_id IN \n            (\n                FOR r IN WritesReview\n                    FILTER r.rating < 3\n                    RETURN r.user_id\n            )\n        RETURN u.user_id\n)\n\nRETURN AVERAGE(ratings)"", ""aql"": ""FOR u IN Users\n    FILTER AVG(FOR r IN 1..1 OUTBOUND u WritesReview RETURN r.rating) < 3\n    RETURN u.user_id"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Users"", ""WritesReview""], ""invalid_attributes"": []}, ""generation_time"": 3.651052713394165}, {""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER AVG(FOR r IN 1..1 OUTBOUND u WritesReview RETURN r.rating) < 3\n    RETURN u.user_id"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q090,Find all Dallas restaurants with a rating above 4.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas"" 
+    AND b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }","FOR b IN Businesses
+    FILTER b.city == ""Dallas"" 
+    AND b.rating > 4.5
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        rating: b.rating,
+        review_count: b.review_count
+    }",True,False,0,3.8595492839813232,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\"" \n    AND b.rating > 4.5\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        rating: b.rating,\n        review_count: b.review_count\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q091,Find all breweries in Los Angeles,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessNeighborhood
+        FILTER c.neighborhood_name == ""Breweries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }","FOR b IN Businesses
+    FILTER b.city == ""Los Angeles""
+    FOR c IN 1..1 OUTBOUND b BusinessNeighborhood
+        FILTER c.neighborhood_name == ""Breweries""
+        RETURN DISTINCT {
+            business_id: b.business_id,
+            name: b.name,
+            rating: b.rating
+        }",True,False,0,3.704707145690918,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Los Angeles\""\n    FOR c IN 1..1 OUTBOUND b BusinessNeighborhood\n        FILTER c.neighborhood_name == \""Breweries\""\n        RETURN DISTINCT {\n            business_id: b.business_id,\n            name: b.name,\n            rating: b.rating\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q092,What neighborhood is restaurant Flat Top Grill in?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Flat Top Grill""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN n.neighborhood_name","FOR b IN Businesses
+    FILTER b.name == ""Flat Top Grill""
+
+    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+        RETURN n.neighborhood_name",True,False,0,2.693744421005249,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Flat Top Grill\""\n\n    FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n        RETURN n.neighborhood_name"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q093,List all user ids with name Michelle,DeepSeek-Coder,"RETURN LENGTH(
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        RETURN u.user_id
+)","RETURN LENGTH(
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+        RETURN u.user_id
+)",True,False,0,2.235703706741333,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""RETURN LENGTH(\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n        RETURN u.user_id\n)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q094,Find all tips about Vintner Grill that received more than 9 likes,DeepSeek-Coder,"LET tips = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR t IN 1..1 INBOUND b TipsBusiness
+            FILTER t.likes > 9
+            RETURN t
+)
+
+RETURN tips","LET tips = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR t IN 1..1 INBOUND b TipsBusiness
+            FILTER t.likes > 9
+            RETURN t
+)
+
+RETURN tips",True,False,0,3.0150296688079834,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET tips = (\n    FOR b IN Businesses\n        FILTER b.name == \""Vintner Grill\""\n\n        FOR t IN 1..1 INBOUND b TipsBusiness\n            FILTER t.likes > 9\n            RETURN t\n)\n\nRETURN tips"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q095,Find all reviews about Kabob Palace in year 2014,DeepSeek-Coder,"LET reviews = (
+    FOR r IN Reviews
+        FILTER r.business_id == ""Kabob Palace"" AND r.year == 2014
+        RETURN r
+)
+
+RETURN reviews","LET reviews = (
+    FOR r IN Reviews
+        FILTER r.business_id == ""Kabob Palace"" AND r.year == 2014
+        RETURN r
+)
+
+RETURN reviews",True,False,0,2.526463508605957,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET reviews = (\n    FOR r IN Reviews\n        FILTER r.business_id == \""Kabob Palace\"" AND r.year == 2014\n        RETURN r\n)\n\nRETURN reviews"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q096,What is the average rating of reviews written in year 2014?,DeepSeek-Coder,"LET avgRating = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2014
+            RETURN r.rating
+)
+
+RETURN AVERAGE(avgRating)","LET avgRating = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FILTER r.year == 2014
+            RETURN r.rating
+)
+
+RETURN AVERAGE(avgRating)",True,False,0,3.463444948196411,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET avgRating = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            FILTER r.year == 2014\n            RETURN r.rating\n)\n\nRETURN AVERAGE(avgRating)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q097,How many people reviewed restaurant Vintner Grill in 2010?,DeepSeek-Coder,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2010
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)","LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Vintner Grill""
+
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.year == 2010
+            RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)",True,False,0,3.5747172832489014,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET reviews = (\n    FOR b IN Businesses\n        FILTER b.name == \""Vintner Grill\""\n\n        FOR r IN 1..1 INBOUND b ReviewsBusiness\n            FILTER r.year == 2010\n            RETURN DISTINCT r._id\n)\n\nRETURN LENGTH(reviews)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q098,Find all users who have written tips about businesses in Dallas,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t WritesTip
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }","FOR b IN Businesses
+    FILTER b.city == ""Dallas""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        FOR u IN 1..1 INBOUND t WritesTip
+            RETURN DISTINCT {
+                user_id: u.user_id,
+                name: u.name
+            }",True,False,0,3.5982797145843506,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Dallas\""\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        FOR u IN 1..1 INBOUND t WritesTip\n            RETURN DISTINCT {\n                user_id: u.user_id,\n                name: u.name\n            }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q099,Find all states in which there is a Whataburger,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Whataburger""
+    RETURN DISTINCT b.state","FOR b IN Businesses
+    FILTER b.name == ""Whataburger""
+    RETURN DISTINCT b.state",True,False,0,1.9701743125915527,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Whataburger\""\n    RETURN DISTINCT b.state"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q100,Find all cities in which there is a restaurant callled MGM Grand Buffet,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" && b.state == ""Texas""
+    RETURN DISTINCT b.city","FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" && b.state == ""Texas""
+    RETURN DISTINCT b.city",True,False,0,2.187778949737549,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""MGM Grand Buffet\"" && b.state == \""Texas\""\n    RETURN DISTINCT b.city"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q101,Find all cities in Texas in which there is a restaurant callled MGM Grand Buffet,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" AND b.city ENDS_WITH ""Texas""
+    RETURN DISTINCT b.city","FOR b IN Businesses
+    FILTER b.name == ""MGM Grand Buffet"" AND b.city ENDS_WITH ""Texas""
+    RETURN DISTINCT b.city",True,False,0,2.430481195449829,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""MGM Grand Buffet\"" AND b.city ENDS_WITH \""Texas\""\n    RETURN DISTINCT b.city"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q102,Find the number of reviews on businesses located in South Summerlin neighborhood,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.business_id IN (
+        FOR b IN Businesses
+            FILTER b.city == ""South Summerlin""
+            RETURN b.business_id
+    )
+    RETURN r
+
+RETURN COUNT(r)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""South Summerlin neighborhood""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Reviews On Businesses Located""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.020134210586548,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR r IN Reviews\n    FILTER r.business_id IN (\n        FOR b IN Businesses\n            FILTER b.city == \""South Summerlin\""\n            RETURN b.business_id\n    )\n    RETURN r\n\nRETURN COUNT(r)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""South Summerlin neighborhood\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews On Businesses Located\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""South Summerlin neighborhood\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews On Businesses Located\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q103,How many escape games are there in Madison?,DeepSeek-Coder,"I'm sorry, but the schema information provided does not contain information about the ""escape games"" in Madison. The schema only provides information about businesses (from the Yelp dataset) and their neighborhoods, check-ins, and reviews. If you have a collection or field related to escape games, I would be able to provide a more accurate query.","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Escape Games""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.2663938999176025,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""I'm sorry, but the schema information provided does not contain information about the \""escape games\"" in Madison. The schema only provides information about businesses (from the Yelp dataset) and their neighborhoods, check-ins, and reviews. If you have a collection or field related to escape games, I would be able to provide a more accurate query."", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Escape Games\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Escape Games\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q104,Find the users who have given tips on pet groomers,DeepSeek-Coder,"FOR u IN 1..1 OUTBOUND b WritesTip
+    FILTER b.name IN [""Pet Groomer"", ""Pet Groomers""]
+    RETURN DISTINCT {
+        user_id: u.user_id,
+        name: u.name
+    }","FOR u IN 1..1 OUTBOUND WritesTip
+    FILTER DOCUMENT_ID(u).startsWith(""Users/"")
+    FILTER u.user_id IN (FOR t IN 1..1 INBOUND u WritesTip FILTER DOCUMENT_ID(t).startsWith(""Tips/"") RETURN t.user_id)[0]
+    RETURN DISTINCT {
+        user_id: u.user_id,
+        name: u.name
+    }",False,True,2,13.403215408325195,"[""Unknown collection(s): FILTER""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR u IN 1..1 OUTBOUND b WritesTip\n    FILTER b.name IN [\""Pet Groomer\"", \""Pet Groomers\""]\n    RETURN DISTINCT {\n        user_id: u.user_id,\n        name: u.name\n    }"", ""aql"": ""FOR u IN 1..1 OUTBOUND b WritesTip\n    FILTER b.name IN  [\""Pet Groomer\"", \""Pet Groomers\""]\n    RETURN DISTINCT {\n        user_id: u.user_id,\n        name: u.name\n     }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'name' in collection 'Tips'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""WritesTip""], ""invalid_attributes"": [{""alias"": ""u"", ""collection"": ""Tips"", ""attribute"": ""name""}]}, ""generation_time"": 4.119219541549683}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR u IN 1..1 OUTBOUND b WritesTip\n    FILTER b.name IN  [\""Pet Groomer\"", \""Pet Groomers\""]\n    RETURN DISTINCT {\n        user_id: u.user_id,\n        name: u.name\n     }"", ""aql"": ""FOR u IN 1..1 OUTBOUND WritesTip\n    FILTER DOCUMENT_ID(u).startsWith(\""Users/\"")\n    FILTER u.user_id IN (FOR t IN 1..1 INBOUND u WritesTip FILTER DOCUMENT_ID(t).startsWith(\""Tips/\"") RETURN t.user_id)[0]\n    RETURN DISTINCT {\n        user_id: u.user_id,\n        name: u.name\n    }"", ""validation"": {""valid"": false, ""errors"": [""Unknown collection(s): FILTER""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""FILTER"", ""WritesTip""], ""invalid_attributes"": []}, ""generation_time"": 6.176530122756958}, {""step"": ""privacy_check"", ""aql"": ""FOR u IN 1..1 OUTBOUND WritesTip\n    FILTER DOCUMENT_ID(u).startsWith(\""Users/\"")\n    FILTER u.user_id IN (FOR t IN 1..1 INBOUND u WritesTip FILTER DOCUMENT_ID(t).startsWith(\""Tips/\"") RETURN t.user_id)[0]\n    RETURN DISTINCT {\n        user_id: u.user_id,\n        name: u.name\n    }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q105,List all reviews for bistros with rating less than 1.5,DeepSeek-Coder,"LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro""
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.rating < 1.5
+            RETURN {
+                business_id: b.business_id,
+                user_id: r.user_id,
+                rating: r.rating,
+                text: r.text
+            }
+)
+
+RETURN reviews","LET reviews = (
+    FOR b IN Businesses
+        FILTER b.name == ""Bistro""
+        FOR r IN 1..1 INBOUND b ReviewsBusiness
+            FILTER r.rating < 1.5
+            RETURN {
+                business_id: b.business_id,
+                user_id: r.user_id,
+                rating: r.rating,
+                text: r.text
+            }
+)
+
+RETURN reviews",True,False,0,4.811277866363525,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""LET reviews = (\n    FOR b IN Businesses\n        FILTER b.name == \""Bistro\""\n        FOR r IN 1..1 INBOUND b ReviewsBusiness\n            FILTER r.rating < 1.5\n            RETURN {\n                business_id: b.business_id,\n                user_id: r.user_id,\n                rating: r.rating,\n                text: r.text\n            }\n)\n\nRETURN reviews"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q106,Find the number of users called Michelle,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+    RETURN COUNT(u)","FOR u IN Users
+    FILTER u.name == ""Michelle""
+    RETURN COUNT(u)",True,False,0,2.006265163421631,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name == \""Michelle\""\n    RETURN COUNT(u)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q107,Find the cities of businesses rated below 1.5,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.rating < 1.5
+    RETURN b.city","FOR b IN Businesses
+    FILTER b.rating < 1.5
+    RETURN b.city",True,False,0,1.844350814819336,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.rating < 1.5\n    RETURN b.city"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q108,In which neighborhoods Michelle has reviewed a buissness?,DeepSeek-Coder,"LET neighborhoods = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+                    RETURN DISTINCT n.neighborhood_name
+)
+
+RETURN neighborhoods","LET neighborhoods = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR r IN 1..1 OUTBOUND u WritesReview
+            FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+                FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+                    RETURN DISTINCT n.neighborhood_name
+)
+
+RETURN neighborhoods",True,False,0,4.122189283370972,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""LET neighborhoods = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR r IN 1..1 OUTBOUND u WritesReview\n            FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n                FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n                    RETURN DISTINCT n.neighborhood_name\n)\n\nRETURN neighborhoods"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q109,Find the business with the most number of reviews in April,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.review_count > 0
+    SORT b.review_count DESC
+    LIMIT 1
+    RETURN {
+        business_id: b.business_id,
+        name: b.name,
+        review_count: b.review_count
+    }","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""April""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Reviews""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,3.377213954925537,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.review_count > 0\n    SORT b.review_count DESC\n    LIMIT 1\n    RETURN {\n        business_id: b.business_id,\n        name: b.name,\n        review_count: b.review_count\n    }"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""April\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""April\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q110,"Find all tips for ""Cafe Zinho"" in Texas.",DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho"" AND b.state == ""Texas""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        RETURN {
+            tip_id: t.tip_id,
+            user_id: t.user_id,
+            likes: t.likes,
+            text: t.text
+        }","FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho"" AND b.state == ""Texas""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+        RETURN {
+            tip_id: t.tip_id,
+            user_id: t.user_id,
+            likes: t.likes,
+            text: t.text
+        }",True,False,0,3.971585750579834,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Cafe Zinho\"" AND b.state == \""Texas\""\n    FOR t IN 1..1 INBOUND b TipsBusiness\n        RETURN {\n            tip_id: t.tip_id,\n            user_id: t.user_id,\n            likes: t.likes,\n            text: t.text\n        }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q111,"Find all cities which has a ""Taj Mahal"".",DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city","FOR b IN Businesses
+    FILTER b.name == ""Taj Mahal""
+    RETURN DISTINCT b.city",True,False,0,1.9126207828521729,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.name == \""Taj Mahal\""\n    RETURN DISTINCT b.city"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q112,List all businesses that are restaurants in Pennsylvania.,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Pennsylvania""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN c.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    RETURN b.name","FOR b IN Businesses
+    FILTER b.city == ""Pennsylvania""
+    LET categories = (
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN c.category_name
+    )
+    FILTER ""Restaurants"" IN categories
+    RETURN b.name",True,False,0,3.6345765590667725,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Pennsylvania\""\n    LET categories = (\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n            RETURN c.category_name\n    )\n    FILTER \""Restaurants\"" IN categories\n    RETURN b.name"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q113,Return me the number of businesses that are restaurants.,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN DISTINCT b
+)
+
+RETURN LENGTH(businesses)","LET businesses = (
+    FOR b IN Businesses
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Restaurants""
+            RETURN DISTINCT b
+)
+
+RETURN LENGTH(businesses)",True,False,0,3.033686637878418,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET businesses = (\n    FOR b IN Businesses\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Restaurants\""\n            RETURN DISTINCT b\n)\n\nRETURN LENGTH(businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q114,List all users who reviewed businesses that are restaurants.,DeepSeek-Coder,"FOR u IN 1..1 INBOUND r WritesReview
+    FILTER r.year == YEAR()
+    FILTER b.city == ""Restaurants""
+    RETURN DISTINCT u.user_id","FOR u IN 1..1 INBOUND r WritesReview
+    FILTER r.year == YEAR()
+    FILTER b.city == ""Restaurants""
+    RETURN DISTINCT u.user_id",True,False,0,2.974679470062256,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN 1..1 INBOUND r WritesReview\n    FILTER r.year == YEAR()\n    FILTER b.city == \""Restaurants\""\n    RETURN DISTINCT u.user_id"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q115,"Return me the number of cities that has ""Panda Express"".",DeepSeek-Coder,"LET pandaExpressCities = (
+    FOR b IN Businesses
+        FILTER b.name == ""Panda Express""
+        RETURN DISTINCT b.city
+)
+
+RETURN LENGTH(pandaExpressCities)","LET pandaExpressCities = (
+    FOR b IN Businesses
+        FILTER b.name == ""Panda Express""
+        RETURN DISTINCT b.city
+)
+
+RETURN LENGTH(pandaExpressCities)",True,False,0,2.936016082763672,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET pandaExpressCities = (\n    FOR b IN Businesses\n        FILTER b.name == \""Panda Express\""\n        RETURN DISTINCT b.city\n)\n\nRETURN LENGTH(pandaExpressCities)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q116,"List all tips for ""Cafe Zinho"" in Pennsylvania in 2010.",DeepSeek-Coder,"FOR t IN 1..1 OUTBOUND Businesses
+    FILTER t.name == ""Cafe Zinho""
+    FILTER t.state == ""Pennsylvania""
+    FOR b IN 1..1 INBOUND t TipsBusiness
+    FILTER b.year == 2010
+    RETURN DISTINCT {
+        tip_id: t.tip_id,
+        user_id: t.user_id,
+        likes: t.likes,
+        text: t.text,
+        year: t.year
+    }","Your corrected AQL should be:
+
+FOR b IN Businesses
+    FILTER b.name == ""Cafe Zinho""
+    FILTER b.state == ""Pennsylvania""
+    FOR t IN 1..1 INBOUND b TipsBusiness
+    FILTER t.year == 2010
+    RETURN DISTINCT {
+        tip_id: t.tip_id,
+        user_id: t.user_id,
+        likes: t.likes,
+        text: t.text,
+        year: t.year
+    }",True,True,1,14.820133924484253,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",False,Sensitive field(s) detected.,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR t IN 1..1 OUTBOUND Businesses\n    FILTER t.name == \""Cafe Zinho\""\n    FILTER t.state == \""Pennsylvania\""\n    FOR b IN 1..1 INBOUND t TipsBusiness\n    FILTER b.year == 2010\n    RETURN DISTINCT {\n        tip_id: t.tip_id,\n        user_id: t.user_id,\n        likes: t.likes,\n        text: t.text,\n        year: t.year\n    }"", ""aql"": ""Your corrected AQL should be:\n\nFOR b IN Businesses\n    FILTER b.name == \""Cafe Zinho\""\n    FILTER b.state == \""Pennsylvania\""\n    FOR t IN 1..1 INBOUND b TipsBusiness\n    FILTER t.year == 2010\n    RETURN DISTINCT {\n        tip_id: t.tip_id,\n        user_id: t.user_id,\n        likes: t.likes,\n        text: t.text,\n        year: t.year\n    }"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""Businesses"", ""TipsBusiness""], ""invalid_attributes"": []}, ""generation_time"": 9.837430477142334}, {""step"": ""privacy_check"", ""aql"": ""Your corrected AQL should be:\n\nFOR b IN Businesses\n    FILTER b.name == \""Cafe Zinho\""\n    FILTER b.state == \""Pennsylvania\""\n    FOR t IN 1..1 INBOUND b TipsBusiness\n    FILTER t.year == 2010\n    RETURN DISTINCT {\n        tip_id: t.tip_id,\n        user_id: t.user_id,\n        likes: t.likes,\n        text: t.text,\n        year: t.year\n    }"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""text""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q117,Return me the number of tips that are written by Michelle.,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.name == ""Michelle""
+    FOR t IN 1..1 OUTBOUND u WritesTip
+        RETURN t","FOR u IN Users
+    FILTER u.name == ""Michelle""
+    FOR t IN 1..1 OUTBOUND u WritesTip
+        RETURN t",True,False,0,2.999347686767578,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.name == \""Michelle\""\n    FOR t IN 1..1 OUTBOUND u WritesTip\n        RETURN t"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q118,Return me the number of tips that are written by Michelle in 2010.,DeepSeek-Coder,"LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2010
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)","LET tips = (
+    FOR u IN Users
+        FILTER u.name == ""Michelle""
+
+        FOR t IN 1..1 OUTBOUND u WritesTip
+            FILTER t.year == 2010
+            RETURN DISTINCT t._id
+)
+
+RETURN LENGTH(tips)",True,False,0,3.223156690597534,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET tips = (\n    FOR u IN Users\n        FILTER u.name == \""Michelle\""\n\n        FOR t IN 1..1 OUTBOUND u WritesTip\n            FILTER t.year == 2010\n            RETURN DISTINCT t._id\n)\n\nRETURN LENGTH(tips)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q119,List all users who reviewed businesses that are restaurants in 2010.,DeepSeek-Coder,"FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.year == 2010
+            LET categories = (
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN c.category_name
+            )
+            FILTER ""Restaurants"" IN categories
+            COLLECT user_id = u.user_id, name = u.name
+            RETURN {
+                user_id: user_id,
+                name: name
+            }","FOR u IN Users
+    FOR r IN 1..1 OUTBOUND u WritesReview
+        FOR b IN 1..1 OUTBOUND r ReviewsBusiness
+            FILTER b.year == 2010
+            LET categories = (
+                FOR c IN 1..1 OUTBOUND b BusinessCategory
+                    RETURN c.category_name
+            )
+            FILTER ""Restaurants"" IN categories
+            COLLECT user_id = u.user_id, name = u.name
+            RETURN {
+                user_id: user_id,
+                name: name
+            }",False,False,2,19.404661893844604,"[""Unknown attribute 'year' in collection 'Businesses'.""]","[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""llm_validation_correction"", ""attempt"": 1, ""previous_aql"": ""FOR u IN Users\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.year == 2010\n            LET categories = (\n                FOR c IN 1..1 OUTBOUND b BusinessCategory\n                    RETURN c.category_name\n            )\n            FILTER \""Restaurants\"" IN categories\n            COLLECT user_id = u.user_id, name = u.name\n            RETURN {\n                user_id: user_id,\n                name: name\n            }"", ""aql"": ""FOR u IN Users\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.year == 2010\n            LET categories = (\n                FOR c IN 1..1 OUTBOUND b BusinessCategory\n                    RETURN c.category_name\n            )\n            FILTER \""Restaurants\"" IN categories\n            COLLECT user_id = u.user_id, name = u.name\n            RETURN {\n                user_id: user_id,\n                name: name\n            }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'year' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""BusinessCategory"", ""ReviewsBusiness"", ""Users"", ""WritesReview""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""year""}]}, ""generation_time"": 9.375691175460815}, {""step"": ""llm_validation_correction"", ""attempt"": 2, ""previous_aql"": ""FOR u IN Users\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.year == 2010\n            LET categories = (\n                FOR c IN 1..1 OUTBOUND b BusinessCategory\n                    RETURN c.category_name\n            )\n            FILTER \""Restaurants\"" IN categories\n            COLLECT user_id = u.user_id, name = u.name\n            RETURN {\n                user_id: user_id,\n                name: name\n            }"", ""aql"": ""FOR u IN Users\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.year == 2010\n            LET categories = (\n                FOR c IN 1..1 OUTBOUND b BusinessCategory\n                    RETURN c.category_name\n            )\n            FILTER \""Restaurants\"" IN categories\n            COLLECT user_id = u.user_id, name = u.name\n            RETURN {\n                user_id: user_id,\n                name: name\n            }"", ""validation"": {""valid"": false, ""errors"": [""Unknown attribute 'year' in collection 'Businesses'.""], ""warnings"": [""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""], ""used_collections"": [""BusinessCategory"", ""ReviewsBusiness"", ""Users"", ""WritesReview""], ""invalid_attributes"": [{""alias"": ""b"", ""collection"": ""Businesses"", ""attribute"": ""year""}]}, ""generation_time"": 4.627702236175537}, {""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FOR r IN 1..1 OUTBOUND u WritesReview\n        FOR b IN 1..1 OUTBOUND r ReviewsBusiness\n            FILTER b.year == 2010\n            LET categories = (\n                FOR c IN 1..1 OUTBOUND b BusinessCategory\n                    RETURN c.category_name\n            )\n            FILTER \""Restaurants\"" IN categories\n            COLLECT user_id = u.user_id, name = u.name\n            RETURN {\n                user_id: user_id,\n                name: name\n            }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q120,Find the total checkins in Brighton Heights neighborhood,DeepSeek-Coder,"LET totalCheckins = (
+    FOR b IN Businesses
+        FILTER b.full_address LIKE ""%Brighton Heights%""
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Brighton Heights""
+            FOR ch IN 1..1 OUTBOUND ch BusinessCheckin
+                RETURN ch.count
+)
+
+RETURN SUM(totalCheckins)","LET totalCheckins = (
+    FOR b IN Businesses
+        FILTER b.full_address LIKE ""%Brighton Heights%""
+        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood
+            FILTER n.neighborhood_name == ""Brighton Heights""
+            FOR ch IN 1..1 OUTBOUND ch BusinessCheckin
+                RETURN ch.count
+)
+
+RETURN SUM(totalCheckins)",True,False,0,4.975873947143555,[],[],False,Sensitive field(s) detected.,"[{""step"": ""privacy_check"", ""aql"": ""LET totalCheckins = (\n    FOR b IN Businesses\n        FILTER b.full_address LIKE \""%Brighton Heights%\""\n        FOR n IN 1..1 OUTBOUND b BusinessNeighborhood\n            FILTER n.neighborhood_name == \""Brighton Heights\""\n            FOR ch IN 1..1 OUTBOUND ch BusinessCheckin\n                RETURN ch.count\n)\n\nRETURN SUM(totalCheckins)"", ""privacy"": {""allowed"": false, ""sensitive_fields"": [""full_address""], ""reason"": ""Sensitive field(s) detected.""}}]",
+Q121,Find the total checkins in Sundays,DeepSeek-Coder,"FOR ch IN Checkins
+    FILTER ch.day == ""Sunday""
+    RETURN SUM(ch.count)","FOR ch IN Checkins
+    FILTER ch.day == ""Sunday""
+    RETURN SUM(ch.count)",True,False,0,2.014004945755005,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR ch IN Checkins\n    FILTER ch.day == \""Sunday\""\n    RETURN SUM(ch.count)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q122,Find all the tips from a user who has written a review in 2012,DeepSeek-Coder,"FOR u IN Users
+    FILTER u.user_id IN (FOR r IN Reviews FILTER r.user_id == u.user_id && r.year == 2012 RETURN DISTINCT u.user_id)
+    FOR t IN 1..1 OUTBOUND u WritesTip
+        RETURN DISTINCT {
+            user_id: u.user_id,
+            name: u.name,
+            tip_id: t.tip_id
+        }","FOR u IN Users
+    FILTER u.user_id IN (FOR r IN Reviews FILTER r.user_id == u.user_id && r.year == 2012 RETURN DISTINCT u.user_id)
+    FOR t IN 1..1 OUTBOUND u WritesTip
+        RETURN DISTINCT {
+            user_id: u.user_id,
+            name: u.name,
+            tip_id: t.tip_id
+        }",True,False,0,4.501766920089722,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR u IN Users\n    FILTER u.user_id IN (FOR r IN Reviews FILTER r.user_id == u.user_id && r.year == 2012 RETURN DISTINCT u.user_id)\n    FOR t IN 1..1 OUTBOUND u WritesTip\n        RETURN DISTINCT {\n            user_id: u.user_id,\n            name: u.name,\n            tip_id: t.tip_id\n        }"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q123,Find the total number of reviews written in March,DeepSeek-Coder,"LET reviews = (
+    FOR r IN Reviews
+        FILTER r.month ~~ ""March""
+        RETURN DISTINCT r._id
+)
+
+RETURN LENGTH(reviews)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""March""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Reviews Written""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,2.597106695175171,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""LET reviews = (\n    FOR r IN Reviews\n        FILTER r.month ~~ \""March\""\n        RETURN DISTINCT r._id\n)\n\nRETURN LENGTH(reviews)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""March\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""March\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Reviews Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q124,Find the number of tips written in each month,DeepSeek-Coder,"RETURN LENGTH(
+    FOR t IN Tips
+        GROUP BY t.month
+        RETURN t
+)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""each month""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Tips Written""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,1.8823292255401611,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""RETURN LENGTH(\n    FOR t IN Tips\n        GROUP BY t.month\n        RETURN t\n)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""each month\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Tips Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""each month\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Tips Written\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q125,How many neighborhoods have a business with rating 5 in Madison?,DeepSeek-Coder,"FOR b IN Businesses
+    FILTER b.city == ""Madison""
+    FILTER b.rating == 5
+    COLLECT neighborhood = b.neighborhood_name
+    RETURN COUNT(DISTINCT neighborhood)","LET matching_businesses = (
+    FOR b IN Businesses
+        FILTER b.city == ""Madison""
+
+        FOR c IN 1..1 OUTBOUND b BusinessCategory
+            FILTER c.category_name == ""Neighborhoods Have A Business With Rating 5""
+
+            RETURN DISTINCT b._id
+)
+
+RETURN LENGTH(matching_businesses)",True,True,0,2.665886640548706,[],[],True,,"[{""step"": ""schema_repair"", ""strategy"": ""schema_guided_category_count"", ""previous_aql"": ""FOR b IN Businesses\n    FILTER b.city == \""Madison\""\n    FILTER b.rating == 5\n    COLLECT neighborhood = b.neighborhood_name\n    RETURN COUNT(DISTINCT neighborhood)"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Neighborhoods Have A Business With Rating 5\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""validation"": {""valid"": true, ""errors"": [], ""warnings"": [], ""used_collections"": [""BusinessCategory"", ""Businesses""], ""invalid_attributes"": []}}, {""step"": ""privacy_check"", ""aql"": ""LET matching_businesses = (\n    FOR b IN Businesses\n        FILTER b.city == \""Madison\""\n\n        FOR c IN 1..1 OUTBOUND b BusinessCategory\n            FILTER c.category_name == \""Neighborhoods Have A Business With Rating 5\""\n\n            RETURN DISTINCT b._id\n)\n\nRETURN LENGTH(matching_businesses)"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q126,Find the business which has the most number of categories,DeepSeek-Coder,"LET businesses = (
+    FOR b IN Businesses
+        RETURN {
+            business_id: b.business_id,
+            category_count: COUNT(FOR c IN 1..1 OUTBOUND b BusinessCategory)
+        }
+)
+
+SORT businesses BY category_count DESC
+LIMIT 1
+
+RETURN businesses[0].business_id","LET businesses = (
+    FOR b IN Businesses
+        RETURN {
+            business_id: b.business_id,
+            category_count: COUNT(FOR c IN 1..1 OUTBOUND b BusinessCategory)
+        }
+)
+
+SORT businesses BY category_count DESC
+LIMIT 1
+
+RETURN businesses[0].business_id",True,False,0,3.599156379699707,[],[],True,,"[{""step"": ""privacy_check"", ""aql"": ""LET businesses = (\n    FOR b IN Businesses\n        RETURN {\n            business_id: b.business_id,\n            category_count: COUNT(FOR c IN 1..1 OUTBOUND b BusinessCategory)\n        }\n)\n\nSORT businesses BY category_count DESC\nLIMIT 1\n\nRETURN businesses[0].business_id"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q127,List all the reviews which rated a business less than 1,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.rating < 1
+    RETURN r","FOR r IN Reviews
+    FILTER r.rating < 1
+    RETURN r",True,False,0,1.7106034755706787,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR r IN Reviews\n    FILTER r.rating < 1\n    RETURN r"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",
+Q128,Find all reviews for businesses rated 2.5,DeepSeek-Coder,"FOR r IN Reviews
+    FILTER r.rating == 2.5
+    RETURN r","FOR r IN Reviews
+    FILTER r.rating == 2.5
+    RETURN r",True,False,0,1.761526107788086,[],"[""No LIMIT detected. A LIMIT is recommended for queries that may return many documents.""]",True,,"[{""step"": ""privacy_check"", ""aql"": ""FOR r IN Reviews\n    FILTER r.rating == 2.5\n    RETURN r"", ""privacy"": {""allowed"": true, ""sensitive_fields"": [], ""reason"": null}}]",

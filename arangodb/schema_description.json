@@ -1,0 +1,323 @@
+{
+    "database": "YelpDB",
+    "graph": "YelpGraph",
+    "document_collections": {
+        "Businesses": {
+            "type": "document",
+            "description": "Businesses from the Yelp dataset.",
+            "document_count": 85899,
+            "fields": {
+                "bid": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "vvPzcOhbQn5fLQUAIxcP6A"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Deluca's Diner"
+                },
+                "full_address": {
+                    "type": "string",
+                    "example": "2015 Penn Ave\nStrip District\nPittsburgh, PA 15222"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "Pittsburgh"
+                },
+                "latitude": {
+                    "type": "string",
+                    "example": "40.4515431"
+                },
+                "longitude": {
+                    "type": "string",
+                    "example": "-79.9837258"
+                },
+                "review_count": {
+                    "type": "integer",
+                    "example": 385
+                },
+                "is_open": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "rating": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "state": {
+                    "type": "string",
+                    "example": "Pennsylvania"
+                }
+            }
+        },
+        "Users": {
+            "type": "document",
+            "description": "Users from the Yelp dataset.",
+            "document_count": 686110,
+            "fields": {
+                "uid": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "Ib5OiwzQ0D2sgkSLBQg3wQ"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Rick"
+                }
+            }
+        },
+        "Reviews": {
+            "type": "document",
+            "description": "Reviews written by users about businesses.",
+            "document_count": 1275792,
+            "fields": {
+                "rid": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "vIXUw1cLG84-m8LzOg3f-w"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "2Wni-wBq5rcJcbV2DFvyDg"
+                },
+                "rating": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "text": {
+                    "type": "string",
+                    "example": "Oy.  Why do I do this to myself.\n\nThe service was fine, but nothing about the food was edible.  First of all, five dollars for stale tortilla chips and \"homemade\" salsa (clearly from a can).\n\nThe chicken wings tasted like fake butter and rubber.  \n\nIt's my fault, I guess."
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2011
+                },
+                "month": {
+                    "type": "string",
+                    "example": "March"
+                }
+            }
+        },
+        "Tips": {
+            "type": "document",
+            "description": "Tips written by users about businesses.",
+            "document_count": 647767,
+            "fields": {
+                "tip_id": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "rHtkiJVIT-AFexNcEQ1vYQ"
+                },
+                "text": {
+                    "type": "string",
+                    "example": "Brandi is awesome!"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "nzJbI_NNZEq5YqcQbyz9Eg"
+                },
+                "likes": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2011
+                },
+                "month": {
+                    "type": "string",
+                    "example": "December"
+                }
+            }
+        },
+        "Categories": {
+            "type": "document",
+            "description": "Categories associated with businesses.",
+            "document_count": 511394,
+            "fields": {
+                "id": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "kmiYqdQYJ5JmQQHgFdHCug"
+                },
+                "category_name": {
+                    "type": "string",
+                    "example": "Venues & Event Spaces"
+                }
+            }
+        },
+        "Checkins": {
+            "type": "document",
+            "description": "Check-in information associated with businesses.",
+            "document_count": 854686,
+            "fields": {
+                "cid": {
+                    "type": "integer",
+                    "example": 61050
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "cE27W9VPgO88Qxe4ol6y_g"
+                },
+                "count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "day": {
+                    "type": "string",
+                    "example": "Sunday"
+                }
+            }
+        },
+        "Neighborhoods": {
+            "type": "document",
+            "description": "Neighborhood information associated with businesses.",
+            "document_count": 72112,
+            "fields": {
+                "id": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "business_id": {
+                    "type": "string",
+                    "example": "nJwzIiboAN8TFrIJUzakuQ"
+                },
+                "neighborhood_name": {
+                    "type": "string",
+                    "example": "Pointe-Claire"
+                }
+            }
+        }
+    },
+    "edge_collections": {
+        "WritesReview": {
+            "type": "edge",
+            "description": "A user writes a review.",
+            "from": "Users",
+            "to": "Reviews",
+            "edge_count": 1274916,
+            "example": {
+                "_from": "Users/3740771",
+                "_to": "Reviews/2621525"
+            }
+        },
+        "ReviewsBusiness": {
+            "type": "edge",
+            "description": "A review refers to a business.",
+            "from": "Reviews",
+            "to": "Businesses",
+            "edge_count": 1275792,
+            "example": {
+                "_from": "Reviews/2464791",
+                "_to": "Businesses/273309"
+            }
+        },
+        "WritesTip": {
+            "type": "edge",
+            "description": "A user writes a tip.",
+            "from": "Users",
+            "to": "Tips",
+            "edge_count": 647182,
+            "example": {
+                "_from": "Users/4084669",
+                "_to": "Tips/378325"
+            }
+        },
+        "TipsBusiness": {
+            "type": "edge",
+            "description": "A tip refers to a business.",
+            "from": "Tips",
+            "to": "Businesses",
+            "edge_count": 647764,
+            "example": {
+                "_from": "Tips/378325",
+                "_to": "Businesses/275881"
+            }
+        },
+        "BusinessCategory": {
+            "type": "edge",
+            "description": "A business is associated with a category.",
+            "from": "Businesses",
+            "to": "Categories",
+            "edge_count": 511382,
+            "example": {
+                "_from": "Businesses/279088",
+                "_to": "Categories/1880981"
+            }
+        },
+        "BusinessCheckin": {
+            "type": "edge",
+            "description": "A business has check-in records.",
+            "from": "Businesses",
+            "to": "Checkins",
+            "edge_count": 854658,
+            "example": {
+                "_from": "Businesses/272360",
+                "_to": "Checkins/1026204"
+            }
+        },
+        "BusinessNeighborhood": {
+            "type": "edge",
+            "description": "A business is associated with a neighborhood.",
+            "from": "Businesses",
+            "to": "Neighborhoods",
+            "edge_count": 72112,
+            "example": {
+                "_from": "Businesses/235280",
+                "_to": "Neighborhoods/2392509"
+            }
+        }
+    },
+    "relationships": [
+        {
+            "edge": "WritesReview",
+            "from": "Users",
+            "to": "Reviews"
+        },
+        {
+            "edge": "ReviewsBusiness",
+            "from": "Reviews",
+            "to": "Businesses"
+        },
+        {
+            "edge": "WritesTip",
+            "from": "Users",
+            "to": "Tips"
+        },
+        {
+            "edge": "TipsBusiness",
+            "from": "Tips",
+            "to": "Businesses"
+        },
+        {
+            "edge": "BusinessCategory",
+            "from": "Businesses",
+            "to": "Categories"
+        },
+        {
+            "edge": "BusinessCheckin",
+            "from": "Businesses",
+            "to": "Checkins"
+        },
+        {
+            "edge": "BusinessNeighborhood",
+            "from": "Businesses",
+            "to": "Neighborhoods"
+        }
+    ]
+}
