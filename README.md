@@ -229,7 +229,7 @@ If you use this project in your research, please cite:
 
 ```
 LLM-based Natural Language to AQL Query Generation for ArangoDB
-Master's/PFE Project — 2026
+Master's PFA Project — 2026
 ```
 
 ## License
